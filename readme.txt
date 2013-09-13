@@ -11,7 +11,7 @@ Plugin to encode and display content using the ROT13 cipher.
 
 == Description ==
 
-The ROT13 Encoder/Decoder plugin allows bloggers and commenters to "encrypt" parts of their writing output with the [ROT13 cipher][http://en.wikipedia.org/wiki/ROT13] in order to conceal content from other readers who don't wish to read them.
+The ROT13 Encoder/Decoder plugin allows bloggers and commenters to "encrypt" parts of their writing output with the [ROT13 cipher](http://en.wikipedia.org/wiki/ROT13) in order to conceal content from other readers who don't wish to read them.
 
 Some cases where you may want to ROT13 content:
 

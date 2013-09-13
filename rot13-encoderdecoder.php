@@ -4,7 +4,7 @@ Plugin Name: ROT13 Encoder/Decoder
 Plugin URI: http://wordpress.org/extend/plugins/rot13-encoderdecoder
 Description: Plugin to ROT13 a portion of text, along with various methods to display decoded content.
 Author: K. Tough
-Version: 1.0
+Version: 1.1
 Author URI: http://wordpress.org/extend/plugins/rot13-encoderdecoder
 */
 

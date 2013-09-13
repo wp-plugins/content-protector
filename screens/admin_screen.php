@@ -1,5 +1,5 @@
 <div class="wrap">
-  <h2><img name="rot13_encoder_decoder_icon32" src="<?php echo WP_PLUGIN_URL . ROT13_ENCODER_DECODER_PLUGIN_DIR . "/img/rot13button32.png"; ?>" align="absmiddle" width="32" height="32" alt="" /> Rot13 Encoder/Decoder Settings</h2>
+  <h2><img name="rot13_encoder_decoder_icon32" src="<?php echo WP_PLUGIN_URL . ROT13_ENCODER_DECODER_PLUGIN_DIR . "/img/rot13button32.png"; ?>" align="absmiddle" width="32" height="32" alt="" /> ROT13 Encoder/Decoder Settings</h2>
   <form action="options.php" method="post">
     <?php settings_fields('rot13_encoder_decoder'); ?>
     <?php do_settings_sections('rot13_encoder_decoder'); ?>

@@ -29,7 +29,7 @@ if ( !class_exists( "rot13EncoderDecoderPlugin" ) ) {
 
 
 		function encodePostText( $atts, $content = null ) {
-			$the_HTML = "<span class='" . ROT13_ENCODER_DECODER_CSS_CLASS. "' title='" . get_option('rot13_encoder_decoder_tooltip') . "'>" . do_shortcode( str_rot13( $content ) ) . "</span>";
+			$the_HTML = "<span class='" . ROT13_ENCODER_DECODER_CSS_CLASS. "' title='" . get_option( 'rot13_encoder_decoder_tooltip', ROT13_ENCODER_DECODER_DEFAULT_TOOLTIP ) . "'>" . do_shortcode( str_rot13( $content ) ) . "</span>";
 
 			return $the_HTML;
 		}
@@ -42,7 +42,7 @@ if ( !class_exists( "rot13EncoderDecoderPlugin" ) ) {
 			$regex = "#\[" . ROT13_ENCODER_DECODER_TAG . "]((?:[^[]|\[(?!/?" . ROT13_ENCODER_DECODER_TAG . "])|(?R))+)\[/" . ROT13_ENCODER_DECODER_TAG . "]#";
 		
 			if ( is_array( $content ) ) {
-				$content = "<span class='" . ROT13_ENCODER_DECODER_CSS_CLASS. "' title='" . get_option('rot13_encoder_decoder_tooltip') . "'>" . str_rot13( $content[1] ) . "</span>";
+				$content = "<span class='" . ROT13_ENCODER_DECODER_CSS_CLASS. "' title='" . get_option( 'rot13_encoder_decoder_tooltip', ROT13_ENCODER_DECODER_DEFAULT_TOOLTIP ) . "'>" . str_rot13( $content[1] ) . "</span>";
 			}
 		
 			return preg_replace_callback( $regex, array( &$this, "encodeCommentText" ), $content );
@@ -118,7 +118,7 @@ if ( !class_exists( "rot13EncoderDecoderPlugin" ) ) {
 		}
 		 
 		function rot13_encoder_decoder_trigger_decode_callback_function() {
-			$option_values = array( 0 => "None",
+			$option_values = array( 0 => "None (i.e., do not decode)",
 									1 => "Single click",
 									2 => "Double click" );
 			$current_value = get_option( 'rot13_encoder_decoder_trigger_decode', ROT13_ENCODER_DECODER_DEFAULT_TRIGGER_DECODE );
@@ -128,7 +128,7 @@ if ( !class_exists( "rot13EncoderDecoderPlugin" ) ) {
 				echo '<option value="' . $value .'" ' . selected( $value, $current_value, false ) . ' >' . $label . '</option>';
 			}
 			echo '</select>';
-			echo "<br /> Select a mouse action to trigger ROT13 decoding.";
+			echo "<br /> Select a mouse action to trigger ROT13 decoding. If Decoding Trigger is set to &quot;None&quot;, consider using the Tooltip to tell your readers about third-party decoding websites like <a href='http://www.rot13.com/'>rot13.com</a>.";
 		}
 		 
 		function rot13_encoder_decoder_decode_method_callback_function() {
@@ -146,7 +146,7 @@ if ( !class_exists( "rot13EncoderDecoderPlugin" ) ) {
 		
 		function rot13_encoder_decoder_tooltip_callback_function() {
 			echo '<input type="text" class="regular-text" name="rot13_encoder_decoder_tooltip" id="rot13_encoder_decoder_tooltip" value="' . get_option( 'rot13_encoder_decoder_tooltip', ROT13_ENCODER_DECODER_DEFAULT_TOOLTIP ) . '" />';
-			echo "<br /> Add a custom message to show as a tooltip when the mouse hovers over the ROT13 encoded content.  If Decoding Trigger is set to &quot;None&quot;, consider using the Tooltip to tell your readers about third-party decoding websites like <a href='http://www.rot13.com/'>rot13.com</a>,";
+			echo "<br /> Add a custom message to show as a tooltip when the mouse hovers over the ROT13 encoded content.";
 		}
 		
 		function rot13_encoder_decoder_popup_settings_section_callback_function() {

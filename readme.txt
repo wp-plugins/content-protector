@@ -1,4 +1,4 @@
-=== Rot13 Encoder/Decoder ===
+=== ROT13 Encoder/Decoder ===
 Contributors: kjvtough
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=5F58ELJ9R3PVL&lc=CA&item_name=ROT13%20Encoder%20Wordpress%20Plugin%20Donation&currency_code=CAD&bn=PP%2dDonationsBF%3abtn_donateCC_LG%2egif%3aNonHosted
 Tags: rot13, cipher, hide, hidden, obfuscate, spoiler, warning, trigger, punchline, solution, answer, encrypt, decrypt, encode, decode, post, page, content, comment

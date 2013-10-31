@@ -57,7 +57,7 @@ Hopefully everything here is straightforward, but if now, post in the support fo
 * Fixed some default settings
 * Improved documentation
 
-= 1.2
+= 1.2 =
 * Color picker on settings screen now uses the built-in Iris jQuery plugin.
 * Use of `wp_localize_script` means no more passing values to Javascript files via query strings (DOING IT RIGHT!).
 * Allowing commenters the use of ROT13 is now an option instead of automatic.

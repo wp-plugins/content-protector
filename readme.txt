@@ -3,8 +3,8 @@ Contributors: kjvtough
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=5F58ELJ9R3PVL&lc=CA&item_name=ROT13%20Encoder%20Wordpress%20Plugin%20Donation&currency_code=CAD&bn=PP%2dDonationsBF%3abtn_donateCC_LG%2egif%3aNonHosted
 Tags: rot13, cipher, hide, hidden, obfuscate, spoiler, warning, trigger, punchline, solution, answer, encrypt, decrypt, encode, decode, post, page, content, comment
 Requires at least: 2.0.2
-Tested up to: 3.6
-Stable tag: 1.1
+Tested up to: 3.7.1
+Stable tag: 1.2
 License: GPL2
 
 Plugin to encode and display content using the ROT13 cipher. 
@@ -42,10 +42,10 @@ Hopefully everything here is straightforward, but if now, post in the support fo
 
 == Screenshots ==
 
-1. Settings screen for the plugin. Here, the settings show that ROT13'd content will be decoded in a pop-up when the user single-clicks on it.
+1. Settings screen for the plugin. Here, the settings show that ROT13'd content will be decoded in place when the user single-clicks on it, and visitors can use the `[rot13]` shortcode in their comments.
 2. Blog post with some ROT13'd content decrypted in a pop-up. 
 3. Editor screen. Use <code>[rot13]</code> and <code>[/rot13]</code> to enclose the content to be ROT13'd, or select your text and click the ROT13 Encoder button. 
-4. Visitors to your blog can also ROT13 their comments.
+4. If activated, visitors to your blog can also ROT13 their comments.
 5. A comment with some ROT13'd content.
 
 == Changelog ==
@@ -57,7 +57,15 @@ Hopefully everything here is straightforward, but if now, post in the support fo
 * Fixed some default settings
 * Improved documentation
 
+= 1.2
+* Color picker on settings screen now uses the built-in Iris jQuery plugin.
+* Use of `wp_localize_script` means no more passing values to Javascript files via query strings (DOING IT RIGHT!).
+* Allowing commenters the use of ROT13 is now an option instead of automatic.
+
 == Upgrade Notice ==
 
 = 1.0 =
 * Initial release. No upgrade required.
+
+= 1.2 =
+* Farbtastic jQuery color picker previously used is deprecated by Wordpress. Please upgrade.

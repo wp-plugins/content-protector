@@ -67,7 +67,7 @@ NOTE: The shortcode can be built using the built-in TinyMCE dialog.  When in dou
 * `password` - Specifies the password that unlocks the protected content. Upper- and lower-case Latin alphabet letters (A-Z and a-z), numbers (0-9), and "." and "/" only.
 * `identifier` <em>(Optional)</em> - Used to differentiate between multiple instances of protected content
 * `cookie_expires` <em>(Optional)</em> - If set, put a cookie on the user's computer so the user doesn't need to re-enter the password when revisiting the page.
-* `ajax=` <em>(Optional)</em> - Load the protected content using AJAX instead of reloading the page. Set to "true" to activate, but you must also set the `identifier` attribute in order to use this.
+* `ajax` <em>(Optional)</em> - Load the protected content using AJAX instead of reloading the page. Set to "true" to activate, but you must also set the `identifier` attribute in order to use this.
 
 = Notes =
 

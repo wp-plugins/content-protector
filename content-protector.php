@@ -10,7 +10,7 @@ Author URI: http://wordpress.org/plugins/content-protector/
 */
 if ( !class_exists("contentProtectorPlugin") ) {
 
-    define( "CONTENT_PROTECTOR_VERSION", "1.0" );
+    define( "CONTENT_PROTECTOR_VERSION", "1.0.1" );
     define( "CONTENT_PROTECTOR_SLUG", "content-protector" );
     define( "CONTENT_PROTECTOR_HANDLE", "content_protector" );
     define( "CONTENT_PROTECTOR_COOKIE_ID", CONTENT_PROTECTOR_HANDLE . "_" );
@@ -42,7 +42,7 @@ if ( !class_exists("contentProtectorPlugin") ) {
 		}
 
         // Inspired by http://ca1.php.net/manual/en/function.timezone-identifiers-list.php#79284
-        function __timeZoneChoice( $default_tz ) {
+        function __generateTimezoneSelectOptions( $default_tz ) {
             $timezone_identifiers = timezone_identifiers_list();
             sort( $timezone_identifiers );
             $current_continent = "";
@@ -56,7 +56,7 @@ if ( !class_exists("contentProtectorPlugin") ) {
                         $options_list .= "<optgroup label=\"" . $continent . "\">"; // Start first continent optgroup
                     }
                     elseif ( $current_continent != $continent ) {
-                        $options_list .= "</optgroup><optgroup label=\"" . $continent . "\">"; // End old optgroup and start new continent optgroup
+                        $options_list .= "</optgroup><optgroup label=\"" . $continent . "\">"; // End current continent optgroup and start new continent optgroup
                     }
                     $options_list .= "<option" . ( ( $timezone_identifier == $default_tz ) ? " selected=\"selected\"" : "" )
                         . " value=\"" . $timezone_identifier . "\">" . str_replace( "_", " ", $city ). "</option>"; //Timezone

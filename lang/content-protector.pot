@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Content Protector 1.0\n"
 "Report-Msgid-Bugs-To: http://wordpress.org/tag/content-protector\n"
-"POT-Creation-Date: 2013-12-08 23:18:19+00:00\n"
+"POT-Creation-Date: 2013-12-10 00:07:49+00:00\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -327,6 +327,36 @@ msgstr ""
 #: tinymce_plugin/dialog.php:55
 msgctxt "TinyMCE Dialog - Expiry duration radio label"
 msgid "Cookie expires after"
+msgstr ""
+
+#: tinymce_plugin/dialog.php:59
+msgctxt "Units of time"
+msgid "minutes"
+msgstr ""
+
+#: tinymce_plugin/dialog.php:60
+msgctxt "Units of time"
+msgid "hours"
+msgstr ""
+
+#: tinymce_plugin/dialog.php:61
+msgctxt "Units of time"
+msgid "days"
+msgstr ""
+
+#: tinymce_plugin/dialog.php:62
+msgctxt "Units of time"
+msgid "weeks"
+msgstr ""
+
+#: tinymce_plugin/dialog.php:63
+msgctxt "Units of time"
+msgid "months"
+msgstr ""
+
+#: tinymce_plugin/dialog.php:64
+msgctxt "Units of time"
+msgid "years"
 msgstr ""
 
 #: tinymce_plugin/dialog.php:70

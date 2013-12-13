@@ -1,23 +1,25 @@
 <?php
 /*
 Plugin Name: ROT13 Encoder/Decoder
-Plugin URI: http://wordpress.org/extend/plugins/rot13-encoderdecoder
+Plugin URI: http://wordpress.org/plugins/rot13-encoderdecoder
 Description: Plugin to apply the ROT13 cipher to selected content, along with various methods to display decoded content.
 Author: K. Tough
-Version: 1.2
-Author URI: http://wordpress.org/extend/plugins/rot13-encoderdecoder
+Version: 1.3
+Author URI: http://wordpress.org/plugins/rot13-encoderdecoder
 */
 
-define( "ROT13_ENCODER_VERSION", 1.2 );
+define( "ROT13_ENCODER_VERSION", "1.3" );
 define( "ROT13_ENCODER_DECODER_TAG", "rot13" );
 define( "ROT13_ENCODER_DECODER_CSS_CLASS", "rot13_encoded" );
 define( "ROT13_ENCODER_DECODER_PLUGIN_URL", plugins_url() . "/rot13-encoderdecoder" );
 define( "ROT13_ENCODER_DECODER_DEFAULT_TOOLTIP", "Double-click to toggle ROT13" );
 define( "ROT13_ENCODER_DECODER_DEFAULT_COMMENTERS", true );
-define( "ROT13_ENCODER_DECODER_DEFAULT_TRIGGER_DECODE", 2 ); // Double-click
-define( "ROT13_ENCODER_DECODER_DEFAULT_DECODE_METHOD", 0 );  // Inline
-define( "ROT13_ENCODER_DECODER_DEFAULT_POPUP_WIDTH", 300 );  // In pixels
+define( "ROT13_ENCODER_DECODER_DEFAULT_TRIGGER_DECODE", "2" ); // Double-click
+define( "ROT13_ENCODER_DECODER_DEFAULT_DECODE_METHOD", "0" );  // Inline
+define( "ROT13_ENCODER_DECODER_DEFAULT_POPUP_WIDTH", "300" );  // In pixels
 define( "ROT13_ENCODER_DECODER_DEFAULT_POPUP_BORDER_COLOR", "#000000" );  // Black
+define( "ROT13_ENCODER_DECODER_DEFAULT_POPUP_BORDER_WIDTH", "1" );  // Black
+define( "ROT13_ENCODER_DECODER_DEFAULT_POPUP_BORDER_RADIUS", "0" );  // Black
 define( "ROT13_ENCODER_DECODER_DEFAULT_POPUP_TEXT_COLOR", "#000000" );  // Black
 define( "ROT13_ENCODER_DECODER_DEFAULT_POPUP_BACKGROUND_COLOR", "#FFFFFF" );  // White
 
@@ -38,7 +40,7 @@ if ( !class_exists( "rot13EncoderDecoderPlugin" ) ) {
 		 * @return string The post content after processing
 		 */
 		function encodePostText( $atts, $content = null ) {
-			$the_HTML = "<span class='" . ROT13_ENCODER_DECODER_CSS_CLASS. "' title='" . get_option( 'rot13_encoder_decoder_tooltip', ROT13_ENCODER_DECODER_DEFAULT_TOOLTIP ) . "'>" . do_shortcode( str_rot13( $content ) ) . "</span>";
+			$the_HTML = "<span class='" . ROT13_ENCODER_DECODER_CSS_CLASS. "' title='" . get_option( 'rot13_encoder_decoder_tooltip', ROT13_ENCODER_DECODER_DEFAULT_TOOLTIP ) . "' style='cursor: pointer;'>" . do_shortcode( str_rot13( $content ) ) . "</span>";
 
 			return $the_HTML;
 		}
@@ -59,7 +61,7 @@ if ( !class_exists( "rot13EncoderDecoderPlugin" ) ) {
 			$regex = "#\[" . ROT13_ENCODER_DECODER_TAG . "]((?:[^[]|\[(?!/?" . ROT13_ENCODER_DECODER_TAG . "])|(?R))+)\[/" . ROT13_ENCODER_DECODER_TAG . "]#";
 		
 			if ( is_array( $content ) ) {
-				$content = "<span class='" . ROT13_ENCODER_DECODER_CSS_CLASS. "' title='" . get_option( 'rot13_encoder_decoder_tooltip', ROT13_ENCODER_DECODER_DEFAULT_TOOLTIP ) . "'>" . str_rot13( $content[1] ) . "</span>";
+				$content = "<span class='" . ROT13_ENCODER_DECODER_CSS_CLASS. "' title='" . get_option( 'rot13_encoder_decoder_tooltip', ROT13_ENCODER_DECODER_DEFAULT_TOOLTIP ) . "' style='cursor: pointer;'>" . str_rot13( $content[1] ) . "</span>";
 			}
 		
 			return preg_replace_callback( $regex, array( &$this, "encodeCommentText" ), $content );
@@ -95,12 +97,14 @@ if ( !class_exists( "rot13EncoderDecoderPlugin" ) ) {
 				wp_localize_script( 'rot13_encoder_decoder_js', 
 									'rot13Options',
 									array( 'rot13_class' => ROT13_ENCODER_DECODER_CSS_CLASS,
-											'trigger_decode' => get_option( 'rot13_encoder_decoder_trigger_decode', ROT13_ENCODER_DECODER_DEFAULT_TRIGGER_DECODE ),
-											'decode_method' => get_option( 'rot13_encoder_decoder_decode_method', ROT13_ENCODER_DECODER_DEFAULT_DECODE_METHOD ),
-											'popup_width' => get_option( 'rot13_encoder_decoder_popup_width', ROT13_ENCODER_DECODER_DEFAULT_POPUP_WIDTH ),
-											'popup_border_color' => get_option( 'rot13_encoder_decoder_popup_border_color', ROT13_ENCODER_DECODER_DEFAULT_POPUP_BORDER_COLOR ),
-											'popup_text_color' => get_option( 'rot13_encoder_decoder_popup_text_color', ROT13_ENCODER_DECODER_DEFAULT_POPUP_TEXT_COLOR ),
-											'popup_background_color' => get_option( 'rot13_encoder_decoder_popup_background_color', ROT13_ENCODER_DECODER_DEFAULT_POPUP_BACKGROUND_COLOR ) ) );
+										'trigger_decode' => get_option( 'rot13_encoder_decoder_trigger_decode', ROT13_ENCODER_DECODER_DEFAULT_TRIGGER_DECODE ),
+										'decode_method' => get_option( 'rot13_encoder_decoder_decode_method', ROT13_ENCODER_DECODER_DEFAULT_DECODE_METHOD ),
+										'popup_width' => get_option( 'rot13_encoder_decoder_popup_width', ROT13_ENCODER_DECODER_DEFAULT_POPUP_WIDTH ),
+                                        'popup_border_color' => get_option( 'rot13_encoder_decoder_popup_border_color', ROT13_ENCODER_DECODER_DEFAULT_POPUP_BORDER_COLOR ),
+                                        'popup_border_width' => get_option( 'rot13_encoder_decoder_popup_border_width', ROT13_ENCODER_DECODER_DEFAULT_POPUP_BORDER_WIDTH ),
+                                        'popup_border_radius' => get_option( 'rot13_encoder_decoder_popup_border_radius', ROT13_ENCODER_DECODER_DEFAULT_POPUP_BORDER_RADIUS ),
+										'popup_text_color' => get_option( 'rot13_encoder_decoder_popup_text_color', ROT13_ENCODER_DECODER_DEFAULT_POPUP_TEXT_COLOR ),
+										'popup_background_color' => get_option( 'rot13_encoder_decoder_popup_background_color', ROT13_ENCODER_DECODER_DEFAULT_POPUP_BACKGROUND_COLOR ) ) );
 				}
 		}
 		
@@ -134,7 +138,9 @@ if ( !class_exists( "rot13EncoderDecoderPlugin" ) ) {
 			
 			// Add the fields for the Popup Window Settings section
 			add_settings_field( 'rot13_encoder_decoder_popup_width', 'Width', array( &$this, 'rot13_encoder_decoder_popup_width_callback_function' ), 'rot13_encoder_decoder', 'rot13_encoder_decoder_popup_settings_section' );
-			add_settings_field( 'rot13_encoder_decoder_popup_border_color', 'Border Color', array( &$this, 'rot13_encoder_decoder_popup_border_color_callback_function' ), 'rot13_encoder_decoder', 'rot13_encoder_decoder_popup_settings_section' );
+            add_settings_field( 'rot13_encoder_decoder_popup_border_color', 'Border Color', array( &$this, 'rot13_encoder_decoder_popup_border_color_callback_function' ), 'rot13_encoder_decoder', 'rot13_encoder_decoder_popup_settings_section' );
+            add_settings_field( 'rot13_encoder_decoder_popup_border_width', 'Border Width', array( &$this, 'rot13_encoder_decoder_popup_border_width_callback_function' ), 'rot13_encoder_decoder', 'rot13_encoder_decoder_popup_settings_section' );
+            add_settings_field( 'rot13_encoder_decoder_popup_border_radius', 'Border Radius', array( &$this, 'rot13_encoder_decoder_popup_border_radius_callback_function' ), 'rot13_encoder_decoder', 'rot13_encoder_decoder_popup_settings_section' );
 			add_settings_field( 'rot13_encoder_decoder_popup_text_color', 'Text Color', array( &$this, 'rot13_encoder_decoder_popup_text_color_callback_function' ), 'rot13_encoder_decoder', 'rot13_encoder_decoder_popup_settings_section' );
 			add_settings_field( 'rot13_encoder_decoder_popup_background_color', 'Background Color', array( &$this, 'rot13_encoder_decoder_popup_background_color_callback_function' ), 'rot13_encoder_decoder', 'rot13_encoder_decoder_popup_settings_section' );
 			
@@ -145,6 +151,8 @@ if ( !class_exists( "rot13EncoderDecoderPlugin" ) ) {
 			register_setting( 'rot13_encoder_decoder', 'rot13_encoder_decoder_commenters' );
 			register_setting( 'rot13_encoder_decoder', 'rot13_encoder_decoder_popup_width', 'intval' );
 			register_setting( 'rot13_encoder_decoder', 'rot13_encoder_decoder_popup_border_color' );
+            register_setting( 'rot13_encoder_decoder', 'rot13_encoder_decoder_popup_border_width', 'intval' );
+            register_setting( 'rot13_encoder_decoder', 'rot13_encoder_decoder_popup_border_radius', 'intval' );
 			register_setting( 'rot13_encoder_decoder', 'rot13_encoder_decoder_popup_text_color' );
 			register_setting( 'rot13_encoder_decoder', 'rot13_encoder_decoder_popup_background_color' );
 		}
@@ -213,8 +221,32 @@ if ( !class_exists( "rot13EncoderDecoderPlugin" ) ) {
 			echo '<input type="text" name="rot13_encoder_decoder_popup_border_color" id="rot13_encoder_decoder_popup_border_color" value="' . $current_value . '" size="7" maxlength="7" style="width: 100px;" />';
 			echo "&nbsp;" . "Border color of the ROT13 popup window.";
 		}
-		
-		function rot13_encoder_decoder_popup_text_color_callback_function() {
+
+        function rot13_encoder_decoder_popup_border_width_callback_function() {
+            $option_values = array_combine( range( 0, 5 ), range( 0, 5 ) );
+            $current_value = get_option( 'rot13_encoder_decoder_popup_border_width', ROT13_ENCODER_DECODER_DEFAULT_POPUP_BORDER_WIDTH );
+
+            echo '<select name="rot13_encoder_decoder_popup_border_width" id="rot13_encoder_decoder_popup_border_width">';
+            foreach ( $option_values as $value => $label)  {
+                echo '<option value="' . $value .'" ' . selected( $value, $current_value, false ) . ' >' . $label . ' px</option>';
+            }
+            echo '</select>';
+            echo "&nbsp;" . "Border width of the ROT13 popup window.";
+        }
+        function rot13_encoder_decoder_popup_border_radius_callback_function() {
+            $option_values = array_combine( range( 0, 45, 5 ), range( 0, 45, 5 ) );
+            $current_value = get_option( 'rot13_encoder_decoder_popup_border_radius', ROT13_ENCODER_DECODER_DEFAULT_POPUP_BORDER_RADIUS );
+
+            echo '<select name="rot13_encoder_decoder_popup_border_radius" id="rot13_encoder_decoder_popup_border_radius">';
+            foreach ( $option_values as $value => $label)  {
+                echo '<option value="' . $value .'" ' . selected( $value, $current_value, false ) . ' >' . $label . ' px</option>';
+            }
+            echo '</select>';
+            echo "&nbsp;" . "Border radius (curvature of the corners) of the ROT13 popup window.";
+        }
+
+
+        function rot13_encoder_decoder_popup_text_color_callback_function() {
 			$current_value = get_option( 'rot13_encoder_decoder_popup_text_color', ROT13_ENCODER_DECODER_DEFAULT_POPUP_TEXT_COLOR );
 			echo '<input type="text" name="rot13_encoder_decoder_popup_text_color" id="rot13_encoder_decoder_popup_text_color" value="' . $current_value . '" size="7" maxlength="7" style="width: 100px;" />';
 			echo "&nbsp;" . "Text color of the ROT13 popup window.";
@@ -240,7 +272,7 @@ if ( !class_exists( "rot13EncoderDecoderPlugin" ) ) {
 		}
 
 		/**
-		 * Initialize the Settings page.
+		 * Sets up variables to use in the TinyMCE plugin's editor_plugin_src.js.
 		 *
 		 */
 		function setTinyMCEPluginVars()  {

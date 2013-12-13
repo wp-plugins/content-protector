@@ -3,8 +3,8 @@ Contributors: kjvtough
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=5F58ELJ9R3PVL&lc=CA&item_name=ROT13%20Encoder%20Wordpress%20Plugin%20Donation&currency_code=CAD&bn=PP%2dDonationsBF%3abtn_donateCC_LG%2egif%3aNonHosted
 Tags: rot13, cipher, hide, hidden, obfuscate, spoiler, warning, trigger, punchline, solution, answer, encrypt, decrypt, encode, decode, post, page, content, comment
 Requires at least: 2.0.2
-Tested up to: 3.7.1
-Stable tag: 1.2
+Tested up to: 3.8
+Stable tag: 1.3
 License: GPL2
 
 Plugin to encode and display content using the ROT13 cipher. 
@@ -50,22 +50,32 @@ Hopefully everything here is straightforward, but if now, post in the support fo
 
 == Changelog ==
 
-= 1.0 =
-* Initial release.
-
-= 1.1 =
-* Fixed some default settings
-* Improved documentation
+= 1.3 =
+* Fixed JQuery bugs evident when shortcode is used multiple times on a single post.
+* `"click"`/`"dblclick"` events now bound using `.on()` instead of `bind()` (allows other plugins to AJAX-load
+content using the `[rot13]` shortcode without losing the decoding functionality).
+* New popup options "Border Width" and "Border Radius"
+* No more shilling on the Settings screen. Enjoy!
 
 = 1.2 =
 * Color picker on settings screen now uses the built-in Iris jQuery plugin.
 * Use of `wp_localize_script` means no more passing values to Javascript files via query strings (DOING IT RIGHT!).
 * Allowing commenters the use of ROT13 is now an option instead of automatic.
 
-== Upgrade Notice ==
+= 1.1 =
+* Fixed some default settings
+* Improved documentation
 
 = 1.0 =
-* Initial release. No upgrade required.
+* Initial release.
+
+== Upgrade Notice ==
+
+= 1.3 =
+Fixed JQuery bugs. Please upgrade.
 
 = 1.2 =
-* Farbtastic jQuery color picker previously used is deprecated by Wordpress. Please upgrade.
+Farbtastic jQuery color picker previously used is deprecated by Wordpress. Please upgrade.
+
+= 1.0 =
+Initial release. No upgrade required.

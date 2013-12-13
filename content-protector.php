@@ -5,12 +5,12 @@ Text Domain: content-protector
 Plugin URI: http://wordpress.org/plugins/content-protector/
 Description: Plugin to password-protect portions of a Page or Post.
 Author: K. Tough
-Version: 1.0.1
+Version: 1.1
 Author URI: http://wordpress.org/plugins/content-protector/
 */
 if ( !class_exists("contentProtectorPlugin") ) {
 
-    define( "CONTENT_PROTECTOR_VERSION", "1.0.1" );
+    define( "CONTENT_PROTECTOR_VERSION", "1.1" );
     define( "CONTENT_PROTECTOR_SLUG", "content-protector" );
     define( "CONTENT_PROTECTOR_HANDLE", "content_protector" );
     define( "CONTENT_PROTECTOR_COOKIE_ID", CONTENT_PROTECTOR_HANDLE . "_" );
@@ -18,6 +18,7 @@ if ( !class_exists("contentProtectorPlugin") ) {
 	define( "CONTENT_PROTECTOR_SHORTCODE", CONTENT_PROTECTOR_HANDLE );
     // Default form field settings
     define( "CONTENT_PROTECTOR_DEFAULT_FORM_INSTRUCTIONS", __( "This content is protected. Please enter the password to access it.", CONTENT_PROTECTOR_SLUG ) );
+    define( "CONTENT_PROTECTOR_DEFAULT_AJAX_LOADING_MESSAGE", __( "Checking Password...", CONTENT_PROTECTOR_SLUG ) );
     define( "CONTENT_PROTECTOR_DEFAULT_ERROR_MESSAGE", __( "Incorrect password. Try again.", CONTENT_PROTECTOR_SLUG ) );
     define( "CONTENT_PROTECTOR_DEFAULT_SUCCESS_MESSAGE", __( "Authorized!", CONTENT_PROTECTOR_SLUG ) );
     define( "CONTENT_PROTECTOR_DEFAULT_FORM_SUBMIT_LABEL", _x( "Submit", "Access form submit label", CONTENT_PROTECTOR_SLUG ) );
@@ -173,7 +174,7 @@ if ( !class_exists("contentProtectorPlugin") ) {
                     return "<div class=\"content-protector-error\">"
                     . "<p class=\"heading\">" . __( "Error", CONTENT_PROTECTOR_SLUG ) . "</p>"
                     . "<p>" . sprintf( __( "No password set in this %s shortcode!", CONTENT_PROTECTOR_SLUG ), "<code>[" . CONTENT_PROTECTOR_SHORTCODE . "]</code>" ) . "</p>"
-                    . "<p><em>" . __( "Note: If you can see this message, it means you can edit this post and fix this error.", CONTENT_PROTECTOR_SLUG ) . "</em> :) </p>"
+                    . "<p><em>" . __( "Note: If you can see this message, it means you can edit the post and fix this error.", CONTENT_PROTECTOR_SLUG ) . "</em> :) </p>"
                     . "</div>";
                 else
                     return "";
@@ -186,7 +187,7 @@ if ( !class_exists("contentProtectorPlugin") ) {
                     return "<div class=\"content-protector-error\">"
                     . "<p class=\"heading\">" . __( "Error", CONTENT_PROTECTOR_SLUG ) . "</p>"
                     . "<p>" . sprintf( __( "No AJAX allowed in this %s shortcode unless an identifier is set!", CONTENT_PROTECTOR_SLUG ), "<code>[" . CONTENT_PROTECTOR_SHORTCODE . "]</code>" ) . "</p>"
-                    . "<p><em>" . __( "Note: If you can see this message, it means you can edit this post and fix this error.", CONTENT_PROTECTOR_SLUG ) . "</em> :) </p>"
+                    . "<p><em>" . __( "Note: If you can see this message, it means you can edit the post and fix this error.", CONTENT_PROTECTOR_SLUG ) . "</em> :) </p>"
                     . "</div>";
                 else
                     return "";
@@ -321,7 +322,7 @@ if ( !class_exists("contentProtectorPlugin") ) {
             wp_enqueue_script( CONTENT_PROTECTOR_SLUG . '-ajax_js', CONTENT_PROTECTOR_PLUGIN_URL . '/js/content-protector-ajax.js', array( 'jquery', 'jquery-form' ), CONTENT_PROTECTOR_VERSION );
             // Set up local variables used in the AJAX JavaScript file
             wp_localize_script( CONTENT_PROTECTOR_SLUG . '-ajax_js', 'contentProtectorAjax', array( 'ajaxurl' => admin_url( 'admin-ajax.php' ),
-                'loading_label' => _x( "Checking Password...", CONTENT_PROTECTOR_SLUG ),
+                'loading_label' => get_option( CONTENT_PROTECTOR_HANDLE . '_ajax_loading_message', CONTENT_PROTECTOR_DEFAULT_AJAX_LOADING_MESSAGE ),
                 'loading_img' => CONTENT_PROTECTOR_PLUGIN_URL . '/img/wpspin.gif',
                 'error_heading' => __( "Error", CONTENT_PROTECTOR_SLUG ),
                 'error_desc' => __( "Something unexpected has happened along the way.  The specific details are below:", CONTENT_PROTECTOR_SLUG ) ) );
@@ -364,6 +365,8 @@ if ( !class_exists("contentProtectorPlugin") ) {
                 'contentProtectorAdminOptions',
                 array( 'form_instructions_default' => CONTENT_PROTECTOR_DEFAULT_FORM_INSTRUCTIONS,
                     'form_instructions_id' => '#' . CONTENT_PROTECTOR_HANDLE . '_form_instructions',
+                    'ajax_loading_message_default' => CONTENT_PROTECTOR_DEFAULT_AJAX_LOADING_MESSAGE,
+                    'ajax_loading_message_id' => '#' . CONTENT_PROTECTOR_HANDLE . '_ajax_loading_message',
                     'success_message_default' => CONTENT_PROTECTOR_DEFAULT_SUCCESS_MESSAGE,
                     'success_message_id' => '#' . CONTENT_PROTECTOR_HANDLE . '_success_message',
                     'error_message_default' => CONTENT_PROTECTOR_DEFAULT_ERROR_MESSAGE,
@@ -393,13 +396,15 @@ if ( !class_exists("contentProtectorPlugin") ) {
 
             // Add the fields for the Form Settings section
             add_settings_field( CONTENT_PROTECTOR_HANDLE . '_form_instructions', __( 'Form Instructions', CONTENT_PROTECTOR_SLUG ), array( &$this, '__formInstructionsFieldCallback' ), CONTENT_PROTECTOR_HANDLE, CONTENT_PROTECTOR_HANDLE . '_form_settings_section' );
+            add_settings_field( CONTENT_PROTECTOR_HANDLE . '_ajax_loading_message', __( 'AJAX Loading Message', CONTENT_PROTECTOR_SLUG ), array( &$this, '__ajaxLoadingMessageFieldCallback' ), CONTENT_PROTECTOR_HANDLE, CONTENT_PROTECTOR_HANDLE . '_form_settings_section' );
             add_settings_field( CONTENT_PROTECTOR_HANDLE . '_success_message', __( 'Success Message', CONTENT_PROTECTOR_SLUG ), array( &$this, '__successMessageFieldCallback' ), CONTENT_PROTECTOR_HANDLE, CONTENT_PROTECTOR_HANDLE . '_form_settings_section' );
             add_settings_field( CONTENT_PROTECTOR_HANDLE . '_error_message', __( 'Error Message', CONTENT_PROTECTOR_SLUG ), array( &$this, '__errorMessageFieldCallback' ), CONTENT_PROTECTOR_HANDLE, CONTENT_PROTECTOR_HANDLE . '_form_settings_section' );
             add_settings_field( CONTENT_PROTECTOR_HANDLE . '_form_submit_label', __( 'Form Submit Label', CONTENT_PROTECTOR_SLUG ), array( &$this, '__formSubmitLabelFieldCallback' ), CONTENT_PROTECTOR_HANDLE, CONTENT_PROTECTOR_HANDLE . '_form_settings_section' );
             add_settings_field( CONTENT_PROTECTOR_HANDLE . '_form_css', __( 'Form CSS', CONTENT_PROTECTOR_SLUG ), array( &$this, '__formCSSFieldCallback' ), CONTENT_PROTECTOR_HANDLE, CONTENT_PROTECTOR_HANDLE . '_form_settings_section' );
 
             // Register our setting so that $_POST handling is done for us and our callback function just has to echo the HTML
-            register_setting( CONTENT_PROTECTOR_HANDLE, CONTENT_PROTECTOR_HANDLE . '_form_instructions', 'esc_attr' );
+            register_setting( CONTENT_PROTECTOR_HANDLE, CONTENT_PROTECTOR_HANDLE . '_form_instructions', 'esc_textarea' );
+            register_setting( CONTENT_PROTECTOR_HANDLE, CONTENT_PROTECTOR_HANDLE . '_ajax_loading_message', 'esc_attr' );
             register_setting( CONTENT_PROTECTOR_HANDLE, CONTENT_PROTECTOR_HANDLE . '_success_message', 'esc_attr' );
             register_setting( CONTENT_PROTECTOR_HANDLE, CONTENT_PROTECTOR_HANDLE . '_error_message', 'esc_attr' );
             register_setting( CONTENT_PROTECTOR_HANDLE, CONTENT_PROTECTOR_HANDLE . '_form_submit_label', 'esc_attr' );
@@ -413,11 +418,19 @@ if ( !class_exists("contentProtectorPlugin") ) {
         }
 
         function __formInstructionsFieldCallback() {
-            echo '<textarea style="vertical-align: top;" rows="4" cols="80" class="regular-text" name="' . CONTENT_PROTECTOR_HANDLE . '_form_instructions' . '" id="' . CONTENT_PROTECTOR_HANDLE . '_form_instructions' . '">' . get_option( CONTENT_PROTECTOR_HANDLE . '_form_instructions', CONTENT_PROTECTOR_DEFAULT_FORM_INSTRUCTIONS ) . '</textarea>';
+            echo '<textarea style="vertical-align: top;" rows="4" cols="70" class="regular-text" name="' . CONTENT_PROTECTOR_HANDLE . '_form_instructions' . '" id="' . CONTENT_PROTECTOR_HANDLE . '_form_instructions' . '">' . get_option( CONTENT_PROTECTOR_HANDLE . '_form_instructions', CONTENT_PROTECTOR_DEFAULT_FORM_INSTRUCTIONS ) . '</textarea>';
             echo "&nbsp;<a href=\"javascript:;\" id=\"form-instructions-reset\">" . __( "Reset To Default", CONTENT_PROTECTOR_SLUG ) . "</a>";
             echo "<div style=\"clear: both;\"></div>";
             echo __( "Instructions for your access form.", CONTENT_PROTECTOR_SLUG );
             echo "<br /><em>" . sprintf( __( "You can style this on all access forms using the %s CSS class.", CONTENT_PROTECTOR_SLUG ), "</em><code>label.content-protector-form-instructions</code><em>" ) . "</em>";
+        }
+
+        function __ajaxLoadingMessageFieldCallback() {
+            echo '<input type="text" class="regular-text" name="' . CONTENT_PROTECTOR_HANDLE . '_ajax_loading_message' . '" id="' . CONTENT_PROTECTOR_HANDLE . '_ajax_loading_message' . '" value="' . get_option( CONTENT_PROTECTOR_HANDLE . '_ajax_loading_message', CONTENT_PROTECTOR_DEFAULT_AJAX_LOADING_MESSAGE ) . '" />';
+            echo "&nbsp;<a href=\"javascript:;\" id=\"ajax-loading-message-reset\">" . __( "Reset To Default", CONTENT_PROTECTOR_SLUG ) . "</a>";
+            echo "<div style=\"clear: both;\"></div>";
+            echo __( "When using AJAX, the message displayed while the password is being checked.", CONTENT_PROTECTOR_SLUG );
+            echo "<br /><em>" . sprintf( __( "You can style this on all access forms using the %s CSS class.", CONTENT_PROTECTOR_SLUG ), "</em><code>div.content-protector-ajaxLoading</code><em>" ) . "</em>";
         }
 
         function __successMessageFieldCallback() {
@@ -445,7 +458,7 @@ if ( !class_exists("contentProtectorPlugin") ) {
         }
 
         function __formCSSFieldCallback() {
-            echo '<textarea style="vertical-align: top; float: left;" rows="12" cols="80" class="regular-text" name="' . CONTENT_PROTECTOR_HANDLE . '_form_css' . '" id="' . CONTENT_PROTECTOR_HANDLE . '_form_css' . '">' . get_option( CONTENT_PROTECTOR_HANDLE . '_form_css', "" ) . '</textarea>';
+            echo '<textarea style="vertical-align: top; float: left;" rows="12" cols="70" class="regular-text" name="' . CONTENT_PROTECTOR_HANDLE . '_form_css' . '" id="' . CONTENT_PROTECTOR_HANDLE . '_form_css' . '">' . get_option( CONTENT_PROTECTOR_HANDLE . '_form_css', "" ) . '</textarea>';
             echo "&nbsp;<a href=\"javascript:;\" id=\"form-css-all\">" . __( "Add CSS scaffolding for all access forms", CONTENT_PROTECTOR_SLUG ) . "</a>";
             echo "<br />&nbsp;<a href=\"javascript:;\" id=\"form-css-ident\">" . __( "Add CSS scaffolding for a specific access form", CONTENT_PROTECTOR_SLUG ) . "</a>";
             echo "<br />&nbsp;<a href=\"javascript:;\" id=\"form-css-reset\">" . _x( "Clear", "Clear the textarea", CONTENT_PROTECTOR_SLUG ) . "</a>";

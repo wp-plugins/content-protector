@@ -1,10 +1,10 @@
 === Content Protector ===
 Contributors: kjvtough
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=5F58ELJ9R3PVL&lc=CA&item_name=Content%20Protector%20Wordpress%20Plugin%20Donation&currency_code=CAD&bn=PP%2dDonationsBF%3abtn_donateCC_LG%2egif%3aNonHosted
-Tags: protect, lock, password, hide, content, secret, AJAX, cookie
+Tags: protect, lock, password, hide, content, secret, AJAX, cookie, post, page, secure
 Requires at least: 2.0.2
 Tested up to: 3.8
-Stable tag: 1.0.1
+Stable tag: 1.1
 License: GPL2
 
 Plugin to protect content on a Page or Post, where users require a password to access that content.
@@ -50,6 +50,9 @@ Coming soon.  In the meantime, check out the support forum and ask away.
 
 == Changelog ==
 
+= 1.1 =
+* AJAX loading message now customizable
+
 = 1.0.1 =
 * Added required images for JQuery UI theme
 * Fixed some i18n strings
@@ -69,7 +72,7 @@ Coming soon.  In the meantime, check out the support forum and ask away.
 
 NOTE: The shortcode can be built using the built-in TinyMCE dialog.  When in doubt, use the dialog to create correctly formed shortcodes.
 
-`[content_protector password="{string}" identifier"{string}" cookie_expires="{string|int}" ajax="{true|{string}}"]Secret content[/content_protector]`
+`[content_protector password="{string}" identifier"{string}" cookie_expires="{string|int}" ajax="{true|{string}}"]...[/content_protector]`
 
 * `password` - Specifies the password that unlocks the protected content. Upper- and lower-case Latin alphabet letters (A-Z and a-z), numbers (0-9), and "." and "/" only.
 * `identifier` <em>(Optional)</em> - Used to differentiate between multiple instances of protected content

@@ -5,6 +5,9 @@ jQuery( document ).ready( function() {
     jQuery('#form-instructions-reset').click( function() {
         jQuery(contentProtectorAdminOptions.form_instructions_id).val(contentProtectorAdminOptions.form_instructions_default);
     });
+    jQuery('#ajax-loading-message-reset').click( function() {
+        jQuery(contentProtectorAdminOptions.ajax_loading_message_id).val(contentProtectorAdminOptions.ajax_loading_message_default);
+    });
     jQuery('#success-message-reset').click( function() {
         jQuery(contentProtectorAdminOptions.success_message_id).val(contentProtectorAdminOptions.success_message_default);
     });

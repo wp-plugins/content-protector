@@ -28,7 +28,8 @@ jQuery( document ).ready( function() {
 			decoded_popup.css( 'top', e.pageY );
 			decoded_popup.css( 'background-color', rot13Options.popup_background_color );
 			decoded_popup.css( 'color', rot13Options.popup_text_color );
-			decoded_popup.css( 'z-index', '99' );
+            decoded_popup.css( 'font-family', jQuery( this ).css( 'font-family' ) );
+            decoded_popup.css( 'z-index', '99' );
 			decoded_popup.text( replaced );
 			decoded_popup.click( function( e ) { jQuery( this ).remove(); } );
 		}

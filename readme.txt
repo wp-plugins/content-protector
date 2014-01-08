@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=5F58E
 Tags: rot13, cipher, hide, hidden, obfuscate, spoiler, warning, trigger, punchline, solution, answer, encrypt, decrypt, encode, decode, post, page, content, comment
 Requires at least: 2.0.2
 Tested up to: 3.8
-Stable tag: 1.3
+Stable tag: 1.4
 License: GPL2
 
 Plugin to encode and display content using the ROT13 cipher. 
@@ -38,7 +38,7 @@ A TinyMCE menu button is added to the editor to help bloggers select text in the
 
 == Frequently Asked Questions ==
 
-Hopefully everything here is straightforward, but if now, post in the support forums and I'll see what I can do.
+Hopefully everything here is straightforward, but if not, post in the support forums and I'll see what I can do.
 
 == Screenshots ==
 
@@ -49,6 +49,11 @@ Hopefully everything here is straightforward, but if now, post in the support fo
 5. A comment with some ROT13'd content.
 
 == Changelog ==
+
+= 1.4 =
+* Palettes on Settings color controls are now loaded from colors read from the active Theme's stylesheet.  This
+should help in choosing colors that fit in with the active Theme.
+* Text in pop-ups now take on the same font family as the original encoded text.
 
 = 1.3 =
 * Fixed JQuery bugs evident when shortcode is used multiple times on a single post.

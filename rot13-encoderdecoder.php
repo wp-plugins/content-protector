@@ -4,11 +4,11 @@ Plugin Name: ROT13 Encoder/Decoder
 Plugin URI: http://wordpress.org/plugins/rot13-encoderdecoder
 Description: Plugin to apply the ROT13 cipher to selected content, along with various methods to display decoded content.
 Author: K. Tough
-Version: 1.3
+Version: 1.4
 Author URI: http://wordpress.org/plugins/rot13-encoderdecoder
 */
 
-define( "ROT13_ENCODER_VERSION", "1.3" );
+define( "ROT13_ENCODER_VERSION", "1.4" );
 define( "ROT13_ENCODER_DECODER_TAG", "rot13" );
 define( "ROT13_ENCODER_DECODER_CSS_CLASS", "rot13_encoded" );
 define( "ROT13_ENCODER_DECODER_PLUGIN_URL", plugins_url() . "/rot13-encoderdecoder" );
@@ -31,6 +31,20 @@ if ( !class_exists( "rot13EncoderDecoderPlugin" ) ) {
 		 *
 		 */
 		function rot13EncoderDecoderPlugin() {}
+
+        /**
+         * Gets the colors from the active Theme's stylesheet (style.css)
+         *
+         * @return array    Array of colors in hexadecimal notation
+         */
+        function __getThemeColors() {
+            $colors = array();
+            $stylesheet = file_get_contents( get_stylesheet_directory() . "/style.css");
+            preg_match_all( "/\#[a-fA-F0-9]{3,6}/", $stylesheet, $matches, PREG_SET_ORDER );
+            foreach ( $matches as $m ) $colors[] = $m[0];
+            sort( $colors );
+            return array_unique( $colors );
+        }
 
 		/**
 		 * Encodes the tagged content in the post and applies <span> tags.
@@ -115,7 +129,8 @@ if ( !class_exists( "rot13EncoderDecoderPlugin" ) ) {
 		function addAdminHeaderCode()  {
 			wp_enqueue_style( 'wp-color-picker' );
 			wp_enqueue_script( 'rot13_encoder_decoder_admin_js', ROT13_ENCODER_DECODER_PLUGIN_URL . '/js/rot13-encoderdecoder-admin.js', array( 'jquery', 'wp-color-picker' ), ROT13_ENCODER_VERSION );
-		}
+            wp_localize_script( 'rot13_encoder_decoder_admin_js', 'rot13AdminOptions',  array( 'theme_colors' => "['" . join( "','", $this->__getThemeColors() ) . "']" ) );
+        }
 
 		/**
 		 * Initialize the Settings page and associated fields.
@@ -142,8 +157,8 @@ if ( !class_exists( "rot13EncoderDecoderPlugin" ) ) {
             add_settings_field( 'rot13_encoder_decoder_popup_border_width', 'Border Width', array( &$this, 'rot13_encoder_decoder_popup_border_width_callback_function' ), 'rot13_encoder_decoder', 'rot13_encoder_decoder_popup_settings_section' );
             add_settings_field( 'rot13_encoder_decoder_popup_border_radius', 'Border Radius', array( &$this, 'rot13_encoder_decoder_popup_border_radius_callback_function' ), 'rot13_encoder_decoder', 'rot13_encoder_decoder_popup_settings_section' );
 			add_settings_field( 'rot13_encoder_decoder_popup_text_color', 'Text Color', array( &$this, 'rot13_encoder_decoder_popup_text_color_callback_function' ), 'rot13_encoder_decoder', 'rot13_encoder_decoder_popup_settings_section' );
-			add_settings_field( 'rot13_encoder_decoder_popup_background_color', 'Background Color', array( &$this, 'rot13_encoder_decoder_popup_background_color_callback_function' ), 'rot13_encoder_decoder', 'rot13_encoder_decoder_popup_settings_section' );
-			
+            add_settings_field( 'rot13_encoder_decoder_popup_background_color', 'Background Color', array( &$this, 'rot13_encoder_decoder_popup_background_color_callback_function' ), 'rot13_encoder_decoder', 'rot13_encoder_decoder_popup_settings_section' );
+
 			// Register our setting so that $_POST handling is done for us and our callback function just has to echo the <input>
 			register_setting( 'rot13_encoder_decoder', 'rot13_encoder_decoder_trigger_decode', 'absint' );
 			register_setting( 'rot13_encoder_decoder', 'rot13_encoder_decoder_decode_method', 'absint' );
@@ -154,7 +169,7 @@ if ( !class_exists( "rot13EncoderDecoderPlugin" ) ) {
             register_setting( 'rot13_encoder_decoder', 'rot13_encoder_decoder_popup_border_width', 'intval' );
             register_setting( 'rot13_encoder_decoder', 'rot13_encoder_decoder_popup_border_radius', 'intval' );
 			register_setting( 'rot13_encoder_decoder', 'rot13_encoder_decoder_popup_text_color' );
-			register_setting( 'rot13_encoder_decoder', 'rot13_encoder_decoder_popup_background_color' );
+            register_setting( 'rot13_encoder_decoder', 'rot13_encoder_decoder_popup_background_color' );
 		}
 		
 		// The following functions set up each section and option field
@@ -245,7 +260,6 @@ if ( !class_exists( "rot13EncoderDecoderPlugin" ) ) {
             echo "&nbsp;" . "Border radius (curvature of the corners) of the ROT13 popup window.";
         }
 
-
         function rot13_encoder_decoder_popup_text_color_callback_function() {
 			$current_value = get_option( 'rot13_encoder_decoder_popup_text_color', ROT13_ENCODER_DECODER_DEFAULT_POPUP_TEXT_COLOR );
 			echo '<input type="text" name="rot13_encoder_decoder_popup_text_color" id="rot13_encoder_decoder_popup_text_color" value="' . $current_value . '" size="7" maxlength="7" style="width: 100px;" />';
@@ -257,8 +271,8 @@ if ( !class_exists( "rot13EncoderDecoderPlugin" ) ) {
 			echo '<input type="text" name="rot13_encoder_decoder_popup_background_color" id="rot13_encoder_decoder_popup_background_color" value="' . $current_value . '" size="7" maxlength="7" style="width: 100px;" />';
 			echo "&nbsp;" . "Background color of the ROT13 popup window.";
 		}
-		
-		/**
+
+        /**
 		 * Prints out the Settings page.
 		 *
 		 */

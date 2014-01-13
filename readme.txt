@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=5F58E
 Tags: protect, lock, password, hide, content, secret, AJAX, cookie, post, page, secure
 Requires at least: 2.0.2
 Tested up to: 3.8
-Stable tag: 1.1
+Stable tag: 1.2
 License: GPL2
 
 Plugin to protect content on a Page or Post, where users require a password to access that content.
@@ -36,19 +36,27 @@ A TinyMCE dialog is included to help users build the shortcode. See the Screensh
 
 == Frequently Asked Questions ==
 
-Coming soon.  In the meantime, check out the support forum and ask away.
+Coming soon.  In the meantime, check out the <a href="http://wordpress.org/support/plugin/content-protector">support forum</a> and ask away.
 
 == Screenshots ==
 
-1. The Settings page for Content Protector.
-2. TinyMCE dialog for generating Content Protector shortcodes.
-3. A Content Protector shortcode wrapped around some top-secret content.
-4. The access form Content Protector creates for your authorized users to enter the password.
-5. If the password is wrong, an error message is displayed, along with the access form so they can try again.
-6. A correct password results in a success message being displayed, along with the unlocked content.
-7. If you've set a cookie, the success message is only shown on initial authorization. This is how the unlocked content will be shown until the cookie expires.
+1. The Form Instructions tab on the Content Protector Settings page.
+2. The Form CSS tab on the Content Protector Settings page.
+3. TinyMCE dialog for generating Content Protector shortcodes.
+4. A Content Protector shortcode wrapped around some top-secret content.
+5. The access form Content Protector creates for your authorized users to enter the password.
+6. If the password is wrong, an error message is displayed, along with the access form so they can try again.
+7. A correct password results in a success message being displayed, along with the unlocked content.
+8. If you've set a cookie, the success message is only shown on initial authorization. This is how the unlocked content will be shown until the cookie expires.
 
 == Changelog ==
+
+= 1.2 =
+* Various CSS settings now controllable from the admin panel
+* Palettes on Settings color controls are now loaded from colors read from the active Theme's stylesheet.  This
+should help in choosing colors that fit in with the active Theme.
+* Spinner image now preloaded
+* Some language stings changed
 
 = 1.1 =
 * AJAX loading message now customizable

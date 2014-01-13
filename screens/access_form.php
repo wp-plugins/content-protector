@@ -1,5 +1,5 @@
-<div id="content-protector<?php echo $identifier; ?>">
-<form id="content-protector-access-form<?php echo $identifier; ?>" class="content-protector-access-form" method="post" action="">
+<?php if ( !isset( $is_ajax_processed) ) { ?><div id="content-protector<?php echo $identifier; ?>" class="content-protector-access-form"><?php } ?>
+<form id="content-protector-access-form<?php echo $identifier; ?>" method="post" action="">
 <?php
 // Error message on unsuccessful attempt. Check $_POST['content-protector-ident'] to make sure
 // we're showing the error message on the right Content Protector access form
@@ -15,7 +15,7 @@ if ( ( isset( $_POST['content-protector-ident'] ) ) && ( $_POST['content-protect
     <input name="content-protector-ident" id="content-protector-ident<?php echo $identifier; ?>" type="hidden" value="<?php echo $ident; ?>" />
     <input name="content-protector-submit" id="content-protector-submit<?php echo $identifier; ?>" class="content-protector-form-submit" type="submit" value="<?php echo get_option( CONTENT_PROTECTOR_HANDLE . '_form_submit_label', CONTENT_PROTECTOR_DEFAULT_FORM_SUBMIT_LABEL ); ?>" />
 </form>
-</div>
+<?php if ( !isset( $is_ajax_processed) ) { ?></div><?php } ?>
 <?php if ( $ajax ) { ?>
 <script type="text/javascript">
 jQuery(document).ready( function() {

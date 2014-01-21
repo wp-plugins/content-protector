@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=5F58E
 Tags: protect, lock, password, hide, content, secret, AJAX, cookie, post, page, secure
 Requires at least: 2.0.2
 Tested up to: 3.8
-Stable tag: 1.2
+Stable tag: 1.2.1
 License: GPL2
 
 Plugin to protect content on a Page or Post, where users require a password to access that content.
@@ -51,6 +51,9 @@ Coming soon.  In the meantime, check out the <a href="http://wordpress.org/suppo
 
 == Changelog ==
 
+= 1.2.1 =
+* Fixed label repetition on "Cookie expires after" drop-down menu
+
 = 1.2 =
 * Various CSS settings now controllable from the admin panel
 * Palettes on Settings color controls are now loaded from colors read from the active Theme's stylesheet.  This
@@ -70,11 +73,14 @@ should help in choosing colors that fit in with the active Theme.
 
 == Upgrade Notice ==
 
+= 1.2.1 =
+Fixed label repetition on "Cookie expires after" drop-down menu. Please upgrade.
+
 = 1.0.1 =
-* Added required images for JQuery UI theme and fixed some i18n strings.
+Added required images for JQuery UI theme and fixed some i18n strings.
 
 = 1.0 =
-* Initial release.
+Initial release.
 
 == Usage ==
 

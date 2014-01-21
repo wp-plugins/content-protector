@@ -56,12 +56,12 @@
             <input id="expiry_duration_quantity" name="expiry_duration_quantity" type="text" size="2"
                    disabled="disabled"/>&nbsp;
             <select id="expiry_duration_unit" name="expiry_duration_unit" disabled="disabled">
-                <option value="minutes"><?php _ex( 'minutes', 'Units of time', CONTENT_PROTECTOR_SLUG ); ?>minutes</option>
-                <option value="hours"><?php _ex( 'hours', 'Units of time', CONTENT_PROTECTOR_SLUG ); ?>hours</option>
-                <option value="days"><?php _ex( 'days', 'Units of time', CONTENT_PROTECTOR_SLUG ); ?>days</option>
-                <option value="weeks"><?php _ex( 'weeks', 'Units of time', CONTENT_PROTECTOR_SLUG ); ?>weeks</option>
-                <option value="months"><?php _ex( 'months', 'Units of time', CONTENT_PROTECTOR_SLUG ); ?>months</option>
-                <option value="years"><?php _ex( 'years', 'Units of time', CONTENT_PROTECTOR_SLUG ); ?>years</option>
+                <option value="minutes"><?php _ex( 'minutes', 'Units of time', CONTENT_PROTECTOR_SLUG ); ?></option>
+                <option value="hours"><?php _ex( 'hours', 'Units of time', CONTENT_PROTECTOR_SLUG ); ?></option>
+                <option value="days"><?php _ex( 'days', 'Units of time', CONTENT_PROTECTOR_SLUG ); ?></option>
+                <option value="weeks"><?php _ex( 'weeks', 'Units of time', CONTENT_PROTECTOR_SLUG ); ?></option>
+                <option value="months"><?php _ex( 'months', 'Units of time', CONTENT_PROTECTOR_SLUG ); ?></option>
+                <option value="years"><?php _ex( 'years', 'Units of time', CONTENT_PROTECTOR_SLUG ); ?></option>
             </select>
         </p>
         <p>

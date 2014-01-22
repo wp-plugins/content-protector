@@ -59,7 +59,7 @@ Coming soon.  In the meantime, check out the <a href="http://wordpress.org/suppo
 * Palettes on Settings color controls are now loaded from colors read from the active Theme's stylesheet.  This
 should help in choosing colors that fit in with the active Theme.
 * Spinner image now preloaded
-* Some language stings changed
+* Some language strings changed
 
 = 1.1 =
 * AJAX loading message now customizable

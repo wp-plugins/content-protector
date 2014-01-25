@@ -4,11 +4,11 @@ Plugin Name: ROT13 Encoder/Decoder
 Plugin URI: http://wordpress.org/plugins/rot13-encoderdecoder
 Description: Plugin to apply the ROT13 cipher to selected content, along with various methods to display decoded content.
 Author: K. Tough
-Version: 1.4
+Version: 1.5
 Author URI: http://wordpress.org/plugins/rot13-encoderdecoder
 */
 
-define( "ROT13_ENCODER_VERSION", "1.4" );
+define( "ROT13_ENCODER_VERSION", "1.5" );
 define( "ROT13_ENCODER_DECODER_TAG", "rot13" );
 define( "ROT13_ENCODER_DECODER_CSS_CLASS", "rot13_encoded" );
 define( "ROT13_ENCODER_DECODER_PLUGIN_URL", plugins_url() . "/rot13-encoderdecoder" );
@@ -18,10 +18,14 @@ define( "ROT13_ENCODER_DECODER_DEFAULT_TRIGGER_DECODE", "2" ); // Double-click
 define( "ROT13_ENCODER_DECODER_DEFAULT_DECODE_METHOD", "0" );  // Inline
 define( "ROT13_ENCODER_DECODER_DEFAULT_POPUP_WIDTH", "300" );  // In pixels
 define( "ROT13_ENCODER_DECODER_DEFAULT_POPUP_BORDER_COLOR", "#000000" );  // Black
-define( "ROT13_ENCODER_DECODER_DEFAULT_POPUP_BORDER_WIDTH", "1" );  // Black
-define( "ROT13_ENCODER_DECODER_DEFAULT_POPUP_BORDER_RADIUS", "0" );  // Black
+define( "ROT13_ENCODER_DECODER_DEFAULT_POPUP_BORDER_STYLE", "solid" );
+define( "ROT13_ENCODER_DECODER_DEFAULT_POPUP_BORDER_WIDTH", "1" );
+define( "ROT13_ENCODER_DECODER_DEFAULT_POPUP_BORDER_RADIUS", "0" );
 define( "ROT13_ENCODER_DECODER_DEFAULT_POPUP_TEXT_COLOR", "#000000" );  // Black
 define( "ROT13_ENCODER_DECODER_DEFAULT_POPUP_BACKGROUND_COLOR", "#FFFFFF" );  // White
+define( "ROT13_ENCODER_DECODER_DEFAULT_POPUP_BOX_SHADOW_DISTANCE", "0" );
+define( "ROT13_ENCODER_DECODER_DEFAULT_POPUP_BOX_SHADOW_COLOR", "#CCC" );  // Gray
+define( "ROT13_ENCODER_DECODER_COLOR_REGEX", "/\#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})/" );  // Color regular expression
 
 if ( !class_exists( "rot13EncoderDecoderPlugin" ) ) {
 	class rot13EncoderDecoderPlugin {
@@ -40,7 +44,7 @@ if ( !class_exists( "rot13EncoderDecoderPlugin" ) ) {
         function __getThemeColors() {
             $colors = array();
             $stylesheet = file_get_contents( get_stylesheet_directory() . "/style.css");
-            preg_match_all( "/\#[a-fA-F0-9]{3,6}/", $stylesheet, $matches, PREG_SET_ORDER );
+            preg_match_all( ROT13_ENCODER_DECODER_COLOR_REGEX, $stylesheet, $matches, PREG_SET_ORDER );
             foreach ( $matches as $m ) $colors[] = $m[0];
             sort( $colors );
             return array_unique( $colors );
@@ -114,11 +118,17 @@ if ( !class_exists( "rot13EncoderDecoderPlugin" ) ) {
 										'trigger_decode' => get_option( 'rot13_encoder_decoder_trigger_decode', ROT13_ENCODER_DECODER_DEFAULT_TRIGGER_DECODE ),
 										'decode_method' => get_option( 'rot13_encoder_decoder_decode_method', ROT13_ENCODER_DECODER_DEFAULT_DECODE_METHOD ),
 										'popup_width' => get_option( 'rot13_encoder_decoder_popup_width', ROT13_ENCODER_DECODER_DEFAULT_POPUP_WIDTH ),
+                                        'popup_border_style' => get_option( 'rot13_encoder_decoder_popup_border_style', ROT13_ENCODER_DECODER_DEFAULT_POPUP_BORDER_STYLE ),
                                         'popup_border_color' => get_option( 'rot13_encoder_decoder_popup_border_color', ROT13_ENCODER_DECODER_DEFAULT_POPUP_BORDER_COLOR ),
                                         'popup_border_width' => get_option( 'rot13_encoder_decoder_popup_border_width', ROT13_ENCODER_DECODER_DEFAULT_POPUP_BORDER_WIDTH ),
                                         'popup_border_radius' => get_option( 'rot13_encoder_decoder_popup_border_radius', ROT13_ENCODER_DECODER_DEFAULT_POPUP_BORDER_RADIUS ),
 										'popup_text_color' => get_option( 'rot13_encoder_decoder_popup_text_color', ROT13_ENCODER_DECODER_DEFAULT_POPUP_TEXT_COLOR ),
-										'popup_background_color' => get_option( 'rot13_encoder_decoder_popup_background_color', ROT13_ENCODER_DECODER_DEFAULT_POPUP_BACKGROUND_COLOR ) ) );
+                                        'popup_background_color' => get_option( 'rot13_encoder_decoder_popup_background_color', ROT13_ENCODER_DECODER_DEFAULT_POPUP_BACKGROUND_COLOR ),
+                                        'popup_box_shadow_h_offset' => get_option( 'rot13_encoder_decoder_popup_box_shadow_h_offset', ROT13_ENCODER_DECODER_DEFAULT_POPUP_BOX_SHADOW_DISTANCE ),
+                                        'popup_box_shadow_v_offset' => get_option( 'rot13_encoder_decoder_popup_box_shadow_v_offset', ROT13_ENCODER_DECODER_DEFAULT_POPUP_BOX_SHADOW_DISTANCE ),
+                                        'popup_box_shadow_blur' => get_option( 'rot13_encoder_decoder_popup_box_shadow_blur', ROT13_ENCODER_DECODER_DEFAULT_POPUP_BOX_SHADOW_DISTANCE ),
+                                        'popup_box_shadow_spread' => get_option( 'rot13_encoder_decoder_popup_box_shadow_spread', ROT13_ENCODER_DECODER_DEFAULT_POPUP_BOX_SHADOW_DISTANCE ),
+                                        'popup_box_shadow_color' => get_option( 'rot13_encoder_decoder_popup_box_shadow_color', ROT13_ENCODER_DECODER_DEFAULT_POPUP_BOX_SHADOW_COLOR ) ) );
 				}
 		}
 		
@@ -138,7 +148,7 @@ if ( !class_exists( "rot13EncoderDecoderPlugin" ) ) {
 		 */
 		function initSettingsPage() {
 		 			
-			$plugin_page = add_options_page( 'Rot13 Encoder/Decoder', 'Rot13 Encoder/Decoder', 'edit_posts', 'rot13_encoder_decoder', array( &$this, 'drawSettingsPage' ) );
+			$plugin_page = add_options_page( 'ROT13 Encoder/Decoder', 'ROT13 Encoder/Decoder', 'edit_posts', 'rot13_encoder_decoder', array( &$this, 'drawSettingsPage' ) );
 			add_action( "admin_print_styles-" . $plugin_page, array( &$this, "addAdminHeaderCode" ) );
 
 			add_settings_section( 'rot13_encoder_decoder_general_settings_section', 'General Settings', array( &$this, 'rot13_encoder_decoder_general_settings_section_callback_function' ), 'rot13_encoder_decoder');
@@ -152,12 +162,22 @@ if ( !class_exists( "rot13EncoderDecoderPlugin" ) ) {
 			add_settings_section( 'rot13_encoder_decoder_popup_settings_section', 'Popup Window Settings', array( &$this, 'rot13_encoder_decoder_popup_settings_section_callback_function' ), 'rot13_encoder_decoder');
 			
 			// Add the fields for the Popup Window Settings section
-			add_settings_field( 'rot13_encoder_decoder_popup_width', 'Width', array( &$this, 'rot13_encoder_decoder_popup_width_callback_function' ), 'rot13_encoder_decoder', 'rot13_encoder_decoder_popup_settings_section' );
+			add_settings_field( 'rot13_encoder_decoder_popup_width', 'Popup Window Width', array( &$this, 'rot13_encoder_decoder_popup_width_callback_function' ), 'rot13_encoder_decoder', 'rot13_encoder_decoder_popup_settings_section' );
+            add_settings_field( 'rot13_encoder_decoder_popup_border_style', 'Border Style', array( &$this, 'rot13_encoder_decoder_popup_border_style_callback_function' ), 'rot13_encoder_decoder', 'rot13_encoder_decoder_popup_settings_section' );
             add_settings_field( 'rot13_encoder_decoder_popup_border_color', 'Border Color', array( &$this, 'rot13_encoder_decoder_popup_border_color_callback_function' ), 'rot13_encoder_decoder', 'rot13_encoder_decoder_popup_settings_section' );
             add_settings_field( 'rot13_encoder_decoder_popup_border_width', 'Border Width', array( &$this, 'rot13_encoder_decoder_popup_border_width_callback_function' ), 'rot13_encoder_decoder', 'rot13_encoder_decoder_popup_settings_section' );
             add_settings_field( 'rot13_encoder_decoder_popup_border_radius', 'Border Radius', array( &$this, 'rot13_encoder_decoder_popup_border_radius_callback_function' ), 'rot13_encoder_decoder', 'rot13_encoder_decoder_popup_settings_section' );
 			add_settings_field( 'rot13_encoder_decoder_popup_text_color', 'Text Color', array( &$this, 'rot13_encoder_decoder_popup_text_color_callback_function' ), 'rot13_encoder_decoder', 'rot13_encoder_decoder_popup_settings_section' );
             add_settings_field( 'rot13_encoder_decoder_popup_background_color', 'Background Color', array( &$this, 'rot13_encoder_decoder_popup_background_color_callback_function' ), 'rot13_encoder_decoder', 'rot13_encoder_decoder_popup_settings_section' );
+
+            add_settings_section( 'rot13_encoder_decoder_popup_box_shadow_settings_section', 'Popup Box Shadow Settings', array( &$this, 'rot13_encoder_decoder_popup_box_shadow_settings_section_callback_function' ), 'rot13_encoder_decoder');
+
+            // Add the fields for the Popup Box Shadow Settings section
+            add_settings_field( 'rot13_encoder_decoder_popup_box_shadow_h_offset', 'Box Shadow Horizontal Offset', array( &$this, 'rot13_encoder_decoder_popup_box_shadow_h_offset_callback_function' ), 'rot13_encoder_decoder', 'rot13_encoder_decoder_popup_box_shadow_settings_section' );
+            add_settings_field( 'rot13_encoder_decoder_popup_box_shadow_v_offset', 'Box Shadow Vertical Offset', array( &$this, 'rot13_encoder_decoder_popup_box_shadow_v_offset_callback_function' ), 'rot13_encoder_decoder', 'rot13_encoder_decoder_popup_box_shadow_settings_section' );
+            add_settings_field( 'rot13_encoder_decoder_popup_box_shadow_blur', 'Box Shadow Blur', array( &$this, 'rot13_encoder_decoder_popup_box_shadow_blur_callback_function' ), 'rot13_encoder_decoder', 'rot13_encoder_decoder_popup_box_shadow_settings_section' );
+            add_settings_field( 'rot13_encoder_decoder_popup_box_shadow_spread', 'Box Shadow Spread', array( &$this, 'rot13_encoder_decoder_popup_box_shadow_spread_callback_function' ), 'rot13_encoder_decoder', 'rot13_encoder_decoder_popup_box_shadow_settings_section' );
+            add_settings_field( 'rot13_encoder_decoder_popup_box_shadow_color', 'Box Shadow Color', array( &$this, 'rot13_encoder_decoder_popup_box_shadow_color_callback_function' ), 'rot13_encoder_decoder', 'rot13_encoder_decoder_popup_box_shadow_settings_section' );
 
 			// Register our setting so that $_POST handling is done for us and our callback function just has to echo the <input>
 			register_setting( 'rot13_encoder_decoder', 'rot13_encoder_decoder_trigger_decode', 'absint' );
@@ -165,13 +185,91 @@ if ( !class_exists( "rot13EncoderDecoderPlugin" ) ) {
 			register_setting( 'rot13_encoder_decoder', 'rot13_encoder_decoder_tooltip', 'esc_attr' );
 			register_setting( 'rot13_encoder_decoder', 'rot13_encoder_decoder_commenters' );
 			register_setting( 'rot13_encoder_decoder', 'rot13_encoder_decoder_popup_width', 'intval' );
-			register_setting( 'rot13_encoder_decoder', 'rot13_encoder_decoder_popup_border_color' );
+            register_setting( 'rot13_encoder_decoder', 'rot13_encoder_decoder_popup_border_style', 'esc_attr' );
+			register_setting( 'rot13_encoder_decoder', 'rot13_encoder_decoder_popup_border_color', array( &$this, 'rot13_encoder_decoder_popup_border_color_validate' ) );
             register_setting( 'rot13_encoder_decoder', 'rot13_encoder_decoder_popup_border_width', 'intval' );
             register_setting( 'rot13_encoder_decoder', 'rot13_encoder_decoder_popup_border_radius', 'intval' );
-			register_setting( 'rot13_encoder_decoder', 'rot13_encoder_decoder_popup_text_color' );
-            register_setting( 'rot13_encoder_decoder', 'rot13_encoder_decoder_popup_background_color' );
-		}
-		
+			register_setting( 'rot13_encoder_decoder', 'rot13_encoder_decoder_popup_text_color', array( &$this, 'rot13_encoder_decoder_popup_text_color_validate' ) );
+            register_setting( 'rot13_encoder_decoder', 'rot13_encoder_decoder_popup_background_color', array( &$this, 'rot13_encoder_decoder_popup_background_color_validate' ) );
+            register_setting( 'rot13_encoder_decoder', 'rot13_encoder_decoder_popup_box_shadow_h_offset', 'intval' );
+            register_setting( 'rot13_encoder_decoder', 'rot13_encoder_decoder_popup_box_shadow_v_offset', 'intval' );
+            register_setting( 'rot13_encoder_decoder', 'rot13_encoder_decoder_popup_box_shadow_blur', 'intval' );
+            register_setting( 'rot13_encoder_decoder', 'rot13_encoder_decoder_popup_box_shadow_spread', 'intval' );
+            register_setting( 'rot13_encoder_decoder', 'rot13_encoder_decoder_popup_box_shadow_color', array( &$this, 'rot13_encoder_decoder_popup_box_shadow_color_validate' ) );
+        }
+
+        function rot13_encoder_decoder_popup_border_style_callback_function() {
+            $options = array( "dotted", "dashed", "solid", "double", "groove", "ridge", "inset", "outset" );
+            $option_values = array_combine( $options, $options );
+            $current_value = get_option( "rot13_encoder_decoder_popup_border_style", ROT13_ENCODER_DECODER_DEFAULT_POPUP_BORDER_STYLE );
+
+            echo "<select name=\"rot13_encoder_decoder_popup_border_style\" id=\"rot13_encoder_decoder_popup_border_style\">";
+            foreach ( $option_values as $value => $label)  {
+                echo '<option value="' . $value .'" ' . selected( $value, $current_value, false ) . ' >' . $label . '</option>';
+            }
+            echo '</select>';
+            echo "&nbsp;" . "Border style of the ROT13 popup window.";
+        }
+
+        function __validateColorNotation( $input ) {
+            if ( 1 === preg_match( ROT13_ENCODER_DECODER_COLOR_REGEX, $input, $matches ) )
+                return $matches[0];
+            else
+                return false;
+        }
+
+        function rot13_encoder_decoder_popup_border_color_validate( $input ) {
+            $valid = $this->__validateColorNotation( $input );
+            if ( false === $valid )
+                add_settings_error(
+                    "rot13_encoder_decoder_popup_border_color", // setting title
+                    "rot13_encoder_decoder_popup_border_color_hex_error", // error ID
+                    "Border Color must be in hex notation (e.g., #AABBCC, #09F, etc.)! Please fix.", // error message
+                    "error" // type of message
+                );
+            else
+                return $valid;
+        }
+
+        function rot13_encoder_decoder_popup_text_color_validate( $input ) {
+            $valid = $this->__validateColorNotation( $input );
+            if ( false === $valid )
+                add_settings_error(
+                    "rot13_encoder_decoder_popup_text_color", // setting title
+                    "rot13_encoder_decoder_popup_text_color_hex_error", // error ID
+                    "Text Color must be in hex notation (e.g., #AABBCC, #09F, etc.)! Please fix.", // error message
+                    "error" // type of message
+                );
+            else
+                return $valid;
+        }
+
+        function rot13_encoder_decoder_popup_background_color_validate( $input ) {
+            $valid = $this->__validateColorNotation( $input );
+            if ( false === $valid )
+                add_settings_error(
+                    "rot13_encoder_decoder_popup_background_color", // setting title
+                    "rot13_encoder_decoder_popup_background_color_hex_error", // error ID
+                    "Background Color must be in hex notation (e.g., #AABBCC, #09F, etc.)! Please fix.", // error message
+                    "error" // type of message
+                );
+            else
+                return $valid;
+        }
+
+        function rot13_encoder_decoder_popup_box_shadow_color_validate( $input ) {
+            $valid = $this->__validateColorNotation( $input );
+            if ( false === $valid )
+                add_settings_error(
+                    "rot13_encoder_decoder_popup_box_shadow_color", // setting title
+                    "rot13_encoder_decoder_popup_box_shadow_color_hex_error", // error ID
+                    "Box Shadow Color must be in hex notation (e.g., #AABBCC, #09F, etc.)! Please fix.", // error message
+                    "error" // type of message
+                );
+            else
+                return $valid;
+        }
+
 		// The following functions set up each section and option field
 		// for the plugin
 		function rot13_encoder_decoder_general_settings_section_callback_function() {
@@ -181,7 +279,8 @@ if ( !class_exists( "rot13EncoderDecoderPlugin" ) ) {
 		function rot13_encoder_decoder_trigger_decode_callback_function() {
 			$option_values = array( 0 => "None (i.e., do not decode)",
 									1 => "Single click",
-									2 => "Double click" );
+                                    2 => "Double click",
+                                    3 => "Hover" );
 			$current_value = get_option( 'rot13_encoder_decoder_trigger_decode', ROT13_ENCODER_DECODER_DEFAULT_TRIGGER_DECODE );
 
 			echo '<select name="rot13_encoder_decoder_trigger_decode" id="rot13_encoder_decoder_trigger_decode">';
@@ -271,6 +370,64 @@ if ( !class_exists( "rot13EncoderDecoderPlugin" ) ) {
 			echo '<input type="text" name="rot13_encoder_decoder_popup_background_color" id="rot13_encoder_decoder_popup_background_color" value="' . $current_value . '" size="7" maxlength="7" style="width: 100px;" />';
 			echo "&nbsp;" . "Background color of the ROT13 popup window.";
 		}
+
+        function rot13_encoder_decoder_popup_box_shadow_settings_section_callback_function() {
+            echo 'Add a shadow to the ROT13 popup window. These settings apply only when the Decoding Method is set to &quot;Popup&quot;.';
+        }
+
+        function rot13_encoder_decoder_popup_box_shadow_h_offset_callback_function() {
+            $option_values = array_combine( range( -10, 10 ), range( -10, 10 ) );
+            $current_value = get_option( 'rot13_encoder_decoder_popup_box_shadow_h_offset', ROT13_ENCODER_DECODER_DEFAULT_POPUP_BOX_SHADOW_DISTANCE );
+
+            echo '<select name="rot13_encoder_decoder_popup_box_shadow_h_offset" id="rot13_encoder_decoder_popup_box_shadow_h_offset">';
+            foreach ( $option_values as $value => $label)  {
+                echo '<option value="' . $value .'" ' . selected( $value, $current_value, false ) . ' >' . $label . ' px</option>';
+            }
+            echo '</select>';
+            echo "&nbsp;" . "Horizontal offset of the ROT13 popup box shadow.";
+        }
+
+        function rot13_encoder_decoder_popup_box_shadow_v_offset_callback_function() {
+            $option_values = array_combine( range( -10, 10 ), range( -10, 10 ) );
+            $current_value = get_option( 'rot13_encoder_decoder_popup_box_shadow_v_offset', ROT13_ENCODER_DECODER_DEFAULT_POPUP_BOX_SHADOW_DISTANCE );
+
+            echo '<select name="rot13_encoder_decoder_popup_box_shadow_v_offset" id="rot13_encoder_decoder_popup_box_shadow_v_offset">';
+            foreach ( $option_values as $value => $label)  {
+                echo '<option value="' . $value .'" ' . selected( $value, $current_value, false ) . ' >' . $label . ' px</option>';
+            }
+            echo '</select>';
+            echo "&nbsp;" . "Vertical offset of the ROT13 popup box shadow.";
+        }
+
+        function rot13_encoder_decoder_popup_box_shadow_blur_callback_function() {
+            $option_values = array_combine( range( 0, 10 ), range( 0, 10 ) );
+            $current_value = get_option( 'rot13_encoder_decoder_popup_box_shadow_blur', ROT13_ENCODER_DECODER_DEFAULT_POPUP_BOX_SHADOW_DISTANCE );
+
+            echo '<select name="rot13_encoder_decoder_popup_box_shadow_blur" id="rot13_encoder_decoder_popup_box_shadow_blur">';
+            foreach ( $option_values as $value => $label)  {
+                echo '<option value="' . $value .'" ' . selected( $value, $current_value, false ) . ' >' . $label . ' px</option>';
+            }
+            echo '</select>';
+            echo "&nbsp;" . "Blur of the ROT13 popup box shadow.";
+        }
+
+        function rot13_encoder_decoder_popup_box_shadow_spread_callback_function() {
+            $option_values = array_combine( range( -10, 10 ), range( -10, 10 ) );
+            $current_value = get_option( 'rot13_encoder_decoder_popup_box_shadow_spread', ROT13_ENCODER_DECODER_DEFAULT_POPUP_BOX_SHADOW_DISTANCE );
+
+            echo '<select name="rot13_encoder_decoder_popup_box_shadow_spread" id="rot13_encoder_decoder_popup_box_shadow_spread">';
+            foreach ( $option_values as $value => $label)  {
+                echo '<option value="' . $value .'" ' . selected( $value, $current_value, false ) . ' >' . $label . ' px</option>';
+            }
+            echo '</select>';
+            echo "&nbsp;" . "Spread of the ROT13 popup box shadow.";
+        }
+
+        function rot13_encoder_decoder_popup_box_shadow_color_callback_function() {
+            $current_value = get_option( 'rot13_encoder_decoder_popup_box_shadow_color', ROT13_ENCODER_DECODER_DEFAULT_POPUP_BOX_SHADOW_COLOR );
+            echo '<input type="text" name="rot13_encoder_decoder_popup_box_shadow_color" id="rot13_encoder_decoder_popup_box_shadow_color" value="' . $current_value . '" size="7" maxlength="7" style="width: 100px;" />';
+            echo "&nbsp;" . "Color of the ROT13 popup box shadow.";
+        }
 
         /**
 		 * Prints out the Settings page.

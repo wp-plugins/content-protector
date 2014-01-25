@@ -1,10 +1,10 @@
 === ROT13 Encoder/Decoder ===
 Contributors: kjvtough
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=5F58ELJ9R3PVL&lc=CA&item_name=ROT13%20Encoder%20Wordpress%20Plugin%20Donation&currency_code=CAD&bn=PP%2dDonationsBF%3abtn_donateCC_LG%2egif%3aNonHosted
-Tags: rot13, cipher, hide, hidden, obfuscate, spoiler, warning, trigger, punchline, solution, answer, encrypt, decrypt, encode, decode, post, page, content, comment
+Tags: rot13, ROT13, cipher, hide, hidden, obfuscate, spoiler, warning, trigger, punchline, solution, answer, encrypt, decrypt, encode, decode, post, page, content, comment
 Requires at least: 2.0.2
 Tested up to: 3.8
-Stable tag: 1.4
+Stable tag: 1.5
 License: GPL2
 
 Plugin to encode and display content using the ROT13 cipher. 
@@ -30,15 +30,15 @@ A TinyMCE menu button is added to the editor to help bloggers select text in the
 **Note:** `XXX` refers to the current version release.
 = Automatic method =
 1. Click 'Add New' on the 'Plugins' page.
-2. Upload `rot13-encoder-XXX.zip` using the file uploader on the page
+2. Upload `rot13-encoderdecoder-XXX.zip` using the file uploader on the page
 
 = Manual method =
-1. Unzip `rot13-encoder-XXX.zip` and upload the `rot13-encoder` folder to the `/wp-content/plugins/` directory
+1. Unzip `rot13-encoderdecoder-XXX.zip` and upload the `rot13-encoderdecoder` folder to the `/wp-content/plugins/` directory
 2. Activate the plugin through the 'Plugins' menu in WordPress
 
 == Frequently Asked Questions ==
 
-Hopefully everything here is straightforward, but if not, post in the support forums and I'll see what I can do.
+Hopefully everything here is straightforward, but if not, post in the <a href="http://wordpress.org/support/plugin/rot13-encoderdecoder">support forum</a> and I'll see what I can do.
 
 == Screenshots ==
 
@@ -49,6 +49,10 @@ Hopefully everything here is straightforward, but if not, post in the support fo
 5. A comment with some ROT13'd content.
 
 == Changelog ==
+= 1.5 =
+* Added some error checking on the color options.
+* New Decoding Trigger: "Hover" will decode the ROT13'd text when the mouse is over the encoded content.
+* New Popup Box Shadow Settings for the ROT13 popup window.
 
 = 1.4 =
 * Palettes on Settings color controls are now loaded from colors read from the active Theme's stylesheet.  This

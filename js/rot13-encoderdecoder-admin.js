@@ -9,7 +9,7 @@ jQuery( document ).ready( function() {
 		hide: true,
 		palettes: colors
 	};
-    jQuery("input#rot13_encoder_decoder_popup_border_color, input#rot13_encoder_decoder_popup_text_color, input#rot13_encoder_decoder_popup_background_color").wpColorPicker(rot13AdminColorOptions);
+    jQuery("input#rot13_encoder_decoder_popup_border_color, input#rot13_encoder_decoder_popup_text_color, input#rot13_encoder_decoder_popup_background_color, input#rot13_encoder_decoder_popup_box_shadow_color").wpColorPicker(rot13AdminColorOptions);
     var picker_inner_width = jQuery("div.iris-square").first().width() + jQuery("div.iris-slider").first().width();
     var picker_height = jQuery("div.iris-picker").first().height();
     var swatch_size = ( picker_inner_width / num_colors_per_row ) - swatch_margin;

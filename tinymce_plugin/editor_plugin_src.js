@@ -14,12 +14,12 @@
 		 * @param {string} url Absolute URL to where the plugin is located.
 		 */
 		init : function(ed, url) {
-			// Register the command so that it can be invoked by using tinyMCE.activeEditor.execCommand('mceExample');
+			// Register the command so that it can be invoked by using tinyMCE.activeEditor.execCommand('mceRot13Content');
 			ed.addCommand('mceRot13Content', function() {
 				tinyMCE.activeEditor.execCommand('mceReplaceContent', false, '[' + rot13AdminTinyMCEOptions.tag + ']{$selection}[/' + rot13AdminTinyMCEOptions.tag + ']');
 			});
 
-			// Register example button
+			// Register button
 			ed.addButton('rot13_encoder_decoder', {
 				title : 'Display content as ROT13',
 				cmd : 'mceRot13Content',

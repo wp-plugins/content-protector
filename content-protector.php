@@ -5,12 +5,12 @@ Text Domain: content-protector
 Plugin URI: http://wordpress.org/plugins/content-protector/
 Description: Plugin to password-protect portions of a Page or Post.
 Author: K. Tough
-Version: 1.2.1
+Version: 1.2.2
 Author URI: http://wordpress.org/plugins/content-protector/
 */
 if ( !class_exists("contentProtectorPlugin") ) {
 
-    define( "CONTENT_PROTECTOR_VERSION", "1.2.1" );
+    define( "CONTENT_PROTECTOR_VERSION", "1.2.2" );
     define( "CONTENT_PROTECTOR_SLUG", "content-protector" );
     define( "CONTENT_PROTECTOR_HANDLE", "content_protector" );
     define( "CONTENT_PROTECTOR_COOKIE_ID", CONTENT_PROTECTOR_HANDLE . "_" );
@@ -253,6 +253,15 @@ if ( !class_exists("contentProtectorPlugin") ) {
             // First, make sure the AJAX request is coming from the site, if not,
             // we kill with extreme prejudice.
             check_ajax_referer( "view_" . CONTENT_PROTECTOR_HANDLE . "_" . $_POST['post_id'] . $_POST['identifier'], "ajax_security" );
+
+            // Support for Contact Form 7
+            if ( is_plugin_active( "contact-form-7/wp-contact-form-7.php" ) ) {
+                require_once( WP_PLUGIN_DIR . "/contact-form-7/wp-contact-form-7.php" );
+                require_once( WP_PLUGIN_DIR . "/contact-form-7/includes/controller.php" );
+                add_shortcode( 'contact-form-7', 'wpcf7_contact_form_tag_func' );
+                add_shortcode( 'contact-form', 'wpcf7_contact_form_tag_func' );
+            }
+
             // Find the post
             $post = get_post( $_POST['post_id'] ); $post_id = $_POST['post_id'];
 

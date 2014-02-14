@@ -1,10 +1,10 @@
 === Content Protector ===
 Contributors: kjvtough
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=5F58ELJ9R3PVL&lc=CA&item_name=Content%20Protector%20Wordpress%20Plugin%20Donation&currency_code=CAD&bn=PP%2dDonationsBF%3abtn_donateCC_LG%2egif%3aNonHosted
-Tags: protect, lock, password, hide, content, secret, AJAX, cookie, post, page, secure
+Tags: protect, lock, password, hide, content, secret, AJAX, cookie, post, page, secure, Contact Form 7
 Requires at least: 2.0.2
 Tested up to: 3.8
-Stable tag: 1.2.1
+Stable tag: 1.2.2
 License: GPL2
 
 Plugin to protect content on a Page or Post, where users require a password to access that content.
@@ -21,6 +21,7 @@ Features
 * Set cookies so users won't need to re-enter the password on every visit
 * Apply custom CSS to your forms
 * Choose from a variety of encryption methods for your passwords (depending on your server configuration)
+* Supports Contact Form 7 in AJAX mode
 
 A TinyMCE dialog is included to help users build the shortcode. See the Screenshots tab for more info.
 
@@ -50,6 +51,9 @@ Coming soon.  In the meantime, check out the <a href="http://wordpress.org/suppo
 8. If you've set a cookie, the success message is only shown on initial authorization. This is how the unlocked content will be shown until the cookie expires.
 
 == Changelog ==
+
+= 1.2.2 =
+* Added support for Contact Form 7 when using AJAX
 
 = 1.2.1 =
 * Fixed label repetition on "Cookie expires after" drop-down menu

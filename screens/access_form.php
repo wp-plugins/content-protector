@@ -30,6 +30,7 @@ jQuery(document).ready( function() {
             },
             url: contentProtectorAjax.ajaxurl,
             beforeSubmit: contentProtectorBeforeSubmit,
+            success: contentProtectorSuccess,
             error: contentProtectorError
         }
     );

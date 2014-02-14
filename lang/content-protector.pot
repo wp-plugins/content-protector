@@ -1,0 +1,596 @@
+# Copyright (C) 2014 Content Protector
+# This file is distributed under the same license as the Content Protector package.
+msgid ""
+msgstr ""
+"Project-Id-Version: Content Protector 1.2\n"
+"Report-Msgid-Bugs-To: http://wordpress.org/tag/content-protector\n"
+"POT-Creation-Date: 2014-01-13 18:22:39+00:00\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"PO-Revision-Date: 2014-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+
+#: content-protector.php:20
+msgid "This content is protected. Please enter the password to access it."
+msgstr ""
+
+#: content-protector.php:21
+msgid "Checking Password..."
+msgstr ""
+
+#: content-protector.php:22
+msgid "Incorrect password. Try again."
+msgstr ""
+
+#: content-protector.php:23
+msgctxt "Message when the correct password is entered"
+msgid "Authorized!"
+msgstr ""
+
+#: content-protector.php:24
+msgctxt "Access form submit label"
+msgid "Submit"
+msgstr ""
+
+#: content-protector.php:191 content-protector.php:204
+#: content-protector.php:378
+msgid "Error"
+msgstr ""
+
+#: content-protector.php:192
+msgid "No password set in this %s shortcode!"
+msgstr ""
+
+#: content-protector.php:193 content-protector.php:206
+msgid ""
+"Note: If you can see this message, it means you can edit the post and fix "
+"this error."
+msgstr ""
+
+#: content-protector.php:205
+msgid "No AJAX allowed in this %s shortcode unless an identifier is set!"
+msgstr ""
+
+#: content-protector.php:379
+msgid ""
+"Something unexpected has happened along the way.  The specific details are "
+"below:"
+msgstr ""
+
+#: content-protector.php:390
+msgid "These styles will be applied to all Content Protector access forms."
+msgstr ""
+
+#: content-protector.php:392 content-protector.php:405
+msgid "Style the entire form"
+msgstr ""
+
+#: content-protector.php:394 content-protector.php:407
+msgid "Style the form instructions"
+msgstr ""
+
+#: content-protector.php:396 content-protector.php:409
+msgid "Style the message when the correct password is entered"
+msgstr ""
+
+#: content-protector.php:398 content-protector.php:411
+msgid "Style the error message for an incorrect password"
+msgstr ""
+
+#: content-protector.php:400 content-protector.php:413
+msgid "Style the Submit button"
+msgstr ""
+
+#: content-protector.php:402 content-protector.php:415
+msgid "Style the AJAX loading message"
+msgstr ""
+
+#: content-protector.php:403
+msgid ""
+"These styles will be applied to the Content Protector access form whose "
+"identifier is &quot;{id}&quot;."
+msgstr ""
+
+#: content-protector.php:443
+msgid ""
+"Enter the Content Protector identifier \n"
+"whose form you want to customize:"
+msgstr ""
+
+#. #-#-#-#-#  plugin.pot (Content Protector 1.2)  #-#-#-#-#
+#. Plugin Name of the plugin/theme
+#: content-protector.php:453 screens/admin_screen.php:3
+msgid "Content Protector"
+msgstr ""
+
+#: content-protector.php:456
+msgid "Password Settings"
+msgstr ""
+
+#: content-protector.php:458
+msgid "Encryption Algorithm"
+msgstr ""
+
+#: content-protector.php:462
+msgid "Form Instructions Settings"
+msgstr ""
+
+#: content-protector.php:464
+msgid "Instructions Text"
+msgstr ""
+
+#: content-protector.php:465 content-protector.php:477
+#: content-protector.php:489 content-protector.php:501
+msgid "Font Weight"
+msgstr ""
+
+#: content-protector.php:466 content-protector.php:490
+#: content-protector.php:502
+msgid "Font Size"
+msgstr ""
+
+#: content-protector.php:467 content-protector.php:479
+#: content-protector.php:491 content-protector.php:503
+#: content-protector.php:513
+msgid "Text Color"
+msgstr ""
+
+#: content-protector.php:474
+msgid "AJAX Loading Message Settings"
+msgstr ""
+
+#: content-protector.php:476 content-protector.php:488
+#: content-protector.php:500
+msgid "Message Text"
+msgstr ""
+
+#: content-protector.php:478
+msgid "Font Style"
+msgstr ""
+
+#: content-protector.php:486
+msgid "Success Message Settings"
+msgstr ""
+
+#: content-protector.php:498
+msgid "Error Message Settings"
+msgstr ""
+
+#: content-protector.php:510
+msgid "Form Submit Button Settings"
+msgstr ""
+
+#: content-protector.php:512
+msgid "Label Text"
+msgstr ""
+
+#: content-protector.php:514
+msgid "Button Color"
+msgstr ""
+
+#: content-protector.php:520
+msgid "Form CSS Settings"
+msgstr ""
+
+#: content-protector.php:522
+msgid "Border Style"
+msgstr ""
+
+#: content-protector.php:523
+msgid "Border Color"
+msgstr ""
+
+#: content-protector.php:524
+msgid "Border Width"
+msgstr ""
+
+#: content-protector.php:525
+msgid "Border Radius"
+msgstr ""
+
+#: content-protector.php:526
+msgid "Padding"
+msgstr ""
+
+#: content-protector.php:527
+msgid "Background Color"
+msgstr ""
+
+#: content-protector.php:528
+msgid "Additional CSS"
+msgstr ""
+
+#: content-protector.php:540
+msgid "Customize the form instructions on the access forms."
+msgstr ""
+
+#: content-protector.php:545 content-protector.php:587
+#: content-protector.php:630 content-protector.php:672
+#: content-protector.php:714
+msgid "Reset To Default"
+msgstr ""
+
+#: content-protector.php:547
+msgid "Instructions for your access form."
+msgstr ""
+
+#: content-protector.php:548 content-protector.php:590
+#: content-protector.php:633 content-protector.php:675
+msgid "You can manually style this on all access forms using the %s CSS class."
+msgstr ""
+
+#: content-protector.php:560
+msgid "Font size of the form instructions text."
+msgstr ""
+
+#: content-protector.php:572
+msgid ""
+"Font weight of the form instructions text (400 is normal, 700 is <b>bold</"
+"b>)."
+msgstr ""
+
+#: content-protector.php:578
+msgid "Color of the form instructions text."
+msgstr ""
+
+#: content-protector.php:582
+msgid ""
+"Customize the &quot;Loading&quot; message on the access forms when using "
+"AJAX."
+msgstr ""
+
+#: content-protector.php:589
+msgid ""
+"When using AJAX, the message displayed while the password is being checked."
+msgstr ""
+
+#: content-protector.php:602
+msgid ""
+"Font weight of the AJAX loading message text (400 is normal, 700 is <b>bold</"
+"b>)."
+msgstr ""
+
+#: content-protector.php:615
+msgid "Font style of the AJAX loading message text."
+msgstr ""
+
+#: content-protector.php:621
+msgid "Color of the AJAX loading message text."
+msgstr ""
+
+#: content-protector.php:625
+msgid "Customize the message displayed when the correct password is entered."
+msgstr ""
+
+#: content-protector.php:632
+msgid "Message when your users enter the correct password."
+msgstr ""
+
+#: content-protector.php:645
+msgid "Font size of the success message text."
+msgstr ""
+
+#: content-protector.php:657
+msgid ""
+"Font weight of the success message text (400 is normal, 700 is <b>bold</b>)."
+msgstr ""
+
+#: content-protector.php:663
+msgid "Color of the success message text."
+msgstr ""
+
+#: content-protector.php:667
+msgid "Customize the message displayed when an incorrect password is entered."
+msgstr ""
+
+#: content-protector.php:674
+msgid "Error message when your users enter an incorrect password."
+msgstr ""
+
+#: content-protector.php:687
+msgid "Font size of the error message text."
+msgstr ""
+
+#: content-protector.php:699
+msgid ""
+"Font weight of the error message text (400 is normal, 700 is <b>bold</b>)."
+msgstr ""
+
+#: content-protector.php:705
+msgid "Color of the error message text."
+msgstr ""
+
+#: content-protector.php:709
+msgid "Customize the &quot;Submit&quot; button on the access forms."
+msgstr ""
+
+#: content-protector.php:716
+msgid "Customize the &quot;Submit&quot; button label on the form."
+msgstr ""
+
+#: content-protector.php:717
+msgid ""
+"You can manually style the form submit button on all access forms using the "
+"%s CSS class."
+msgstr ""
+
+#: content-protector.php:723
+msgid "Color of the form submit label text."
+msgstr ""
+
+#: content-protector.php:729
+msgid "Color of the form submit button."
+msgstr ""
+
+#: content-protector.php:733
+msgid "Customize the overall look-and-feel of your access forms."
+msgstr ""
+
+#: content-protector.php:734
+msgid ""
+"You can manually style the overall look of all access forms using the %s CSS "
+"class."
+msgstr ""
+
+#: content-protector.php:747
+msgid "Border style of the access form."
+msgstr ""
+
+#: content-protector.php:753
+msgid "Border color of the access form."
+msgstr ""
+
+#: content-protector.php:765
+msgid "Border radius (curvature of the corners) of the access form."
+msgstr ""
+
+#: content-protector.php:777
+msgid "Border width of the access form."
+msgstr ""
+
+#: content-protector.php:789
+msgid "Padding inside the border of the access form."
+msgstr ""
+
+#: content-protector.php:795
+msgid "Background color of the access form."
+msgstr ""
+
+#: content-protector.php:800
+msgid "Add CSS scaffolding for all access forms"
+msgstr ""
+
+#: content-protector.php:801
+msgid "Add CSS scaffolding for a specific access form"
+msgstr ""
+
+#: content-protector.php:802
+msgctxt "Clear the textarea"
+msgid "Clear"
+msgstr ""
+
+#: content-protector.php:804
+msgid ""
+"Apply custom CSS to your access form. <strong>Knowledge of CSS required.</"
+"strong>"
+msgstr ""
+
+#: content-protector.php:808
+msgid ""
+"Control how the password for your protected content is encrypted. More info "
+"at <a href=\"%1$s\">%2$s</a>."
+msgstr ""
+
+#: content-protector.php:809
+msgctxt "URL for PHP's crypt() man page (language-specific)"
+msgid "http://www.php.net/manual/en/function.crypt.php"
+msgstr ""
+
+#: content-protector.php:810
+msgctxt "Link for PHP's crypt() man page (language-specific)"
+msgid "PHP's crypt() man page"
+msgstr ""
+
+#: content-protector.php:814
+msgctxt "Encryption algorithm"
+msgid "Standard DES"
+msgstr ""
+
+#: content-protector.php:815
+msgctxt "Encryption algorithm"
+msgid "Extended DES"
+msgstr ""
+
+#: content-protector.php:816
+msgctxt "Encryption algorithm"
+msgid "MD5"
+msgstr ""
+
+#: content-protector.php:817
+msgctxt "Encryption algorithm"
+msgid "Blowfish"
+msgstr ""
+
+#: content-protector.php:818
+msgctxt "Encryption algorithm"
+msgid "SHA-256"
+msgstr ""
+
+#: content-protector.php:819
+msgctxt "Encryption algorithm"
+msgid "SHA-512"
+msgstr ""
+
+#: content-protector.php:828
+msgid ""
+"Select the encryption algorithm to encrypt the password for your protected "
+"content. Only those algorithms supported by your server are listed."
+msgstr ""
+
+#: content-protector.php:870
+msgid "Add Content Protector shortcode"
+msgstr ""
+
+#: screens/admin_screen.php:18 screens/admin_screen.php:25
+#: screens/admin_screen.php:32 screens/admin_screen.php:39
+#: screens/admin_screen.php:46 screens/admin_screen.php:53
+#: screens/admin_screen.php:60
+msgid "Save Settings"
+msgstr ""
+
+#: tinymce_plugin/dialog.php:4
+msgctxt "TinyMCE Dialog - Dialog titlebar"
+msgid "Add Content Protector shortcode"
+msgstr ""
+
+#: tinymce_plugin/dialog.php:9
+msgctxt "Date format for jQuery UI Datepicker"
+msgid "MM d, yy"
+msgstr ""
+
+#: tinymce_plugin/dialog.php:11
+msgid "Please set an expiry time, or uncheck the Set Cookie checkbox."
+msgstr ""
+
+#: tinymce_plugin/dialog.php:12
+msgid "Please set a password to protect your content."
+msgstr ""
+
+#: tinymce_plugin/dialog.php:13
+msgid "Password can only contain letters, numbers, \".\", and \"/\"."
+msgstr ""
+
+#: tinymce_plugin/dialog.php:14
+msgid "Duration must be an natural number (1, 2, 3, ... )."
+msgstr ""
+
+#: tinymce_plugin/dialog.php:15
+msgid "Please set an identifier to use AJAX."
+msgstr ""
+
+#: tinymce_plugin/dialog.php:24
+msgctxt "TinyMCE Dialog - Properties fieldset label"
+msgid "Properties"
+msgstr ""
+
+#: tinymce_plugin/dialog.php:26
+msgctxt "TinyMCE Dialog - Password textbox label"
+msgid "Set password:"
+msgstr ""
+
+#: tinymce_plugin/dialog.php:31
+msgctxt "TinyMCE Dialog - Identifier textbox label"
+msgid "Set identifier:"
+msgstr ""
+
+#: tinymce_plugin/dialog.php:33
+msgctxt "TinyMCE Dialog - Identifier description"
+msgid ""
+"(Optional - Set an identifier if you want to use AJAX or custom CSS on this "
+"form.)"
+msgstr ""
+
+#: tinymce_plugin/dialog.php:39
+msgctxt "TinyMCE Dialog - Use AJAX label"
+msgid "Use AJAX to load the protected content."
+msgstr ""
+
+#: tinymce_plugin/dialog.php:46
+msgctxt "TinyMCE Dialog - Set Cookie fieldset label"
+msgid "Set Cookie For Unlocked Content"
+msgstr ""
+
+#: tinymce_plugin/dialog.php:49
+msgctxt "TinyMCE Dialog - Expiry HTML Select label"
+msgid ""
+"(Although optional, you should also set an identifier if you want to set a "
+"cookie; otherwise, editing the protected content in the future will require "
+"your users to re-enter the password.)"
+msgstr ""
+
+#: tinymce_plugin/dialog.php:55
+msgctxt "TinyMCE Dialog - Expiry duration radio label"
+msgid "Cookie expires after"
+msgstr ""
+
+#: tinymce_plugin/dialog.php:59
+msgctxt "Units of time"
+msgid "minutes"
+msgstr ""
+
+#: tinymce_plugin/dialog.php:60
+msgctxt "Units of time"
+msgid "hours"
+msgstr ""
+
+#: tinymce_plugin/dialog.php:61
+msgctxt "Units of time"
+msgid "days"
+msgstr ""
+
+#: tinymce_plugin/dialog.php:62
+msgctxt "Units of time"
+msgid "weeks"
+msgstr ""
+
+#: tinymce_plugin/dialog.php:63
+msgctxt "Units of time"
+msgid "months"
+msgstr ""
+
+#: tinymce_plugin/dialog.php:64
+msgctxt "Units of time"
+msgid "years"
+msgstr ""
+
+#: tinymce_plugin/dialog.php:70
+msgctxt "Expiry date/time radio label"
+msgid "Cookie expires at this specific date and time:"
+msgstr ""
+
+#: tinymce_plugin/dialog.php:74
+msgctxt "Date field label"
+msgid "Date:"
+msgstr ""
+
+#: tinymce_plugin/dialog.php:77
+msgctxt "Time field label"
+msgid "Time:"
+msgstr ""
+
+#: tinymce_plugin/dialog.php:84
+msgctxt "TinyMCE Dialog - Timezone SELECT HTML label"
+msgid "Timezone:"
+msgstr ""
+
+#: tinymce_plugin/dialog.php:95
+msgctxt "TinyMCE Dialog - Cookie expires when the browser closes radio label"
+msgid "Cookie expires when the browser closes."
+msgstr ""
+
+#: tinymce_plugin/dialog.php:100
+msgctxt "TinyMCE Dialog - Insert button HTML label"
+msgid "Insert"
+msgstr ""
+
+#: tinymce_plugin/dialog.php:103
+msgctxt "TinyMCE Dialog - Cancel button HTML label"
+msgid "Cancel"
+msgstr ""
+
+#. #-#-#-#-#  plugin.pot (Content Protector 1.2)  #-#-#-#-#
+#. Plugin URI of the plugin/theme
+#. #-#-#-#-#  plugin.pot (Content Protector 1.2)  #-#-#-#-#
+#. Author URI of the plugin/theme
+msgid "http://wordpress.org/plugins/content-protector/"
+msgstr ""
+
+#. Description of the plugin/theme
+msgid "Plugin to password-protect portions of a Page or Post."
+msgstr ""
+
+#. Author of the plugin/theme
+msgid "K. Tough"
+msgstr ""

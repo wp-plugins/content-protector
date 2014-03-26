@@ -5,7 +5,7 @@ Text Domain: content-protector
 Plugin URI: http://wordpress.org/plugins/content-protector/
 Description: Plugin to password-protect portions of a Page or Post.
 Author: K. Tough
-Version: 1.2.2
+Version: 1.3
 Author URI: http://wordpress.org/plugins/content-protector/
 */
 if ( !class_exists("contentProtectorPlugin") ) {
@@ -24,6 +24,7 @@ if ( !class_exists("contentProtectorPlugin") ) {
     define( "CONTENT_PROTECTOR_DEFAULT_FORM_SUBMIT_LABEL", _x( "Submit", "Access form submit label", CONTENT_PROTECTOR_SLUG ) );
     define( "CONTENT_PROTECTOR_DEFAULT_ENCRYPTION_ALGORITHM", "CRYPT_STD_DES" );
     define( "CONTENT_PROTECTOR_DEFAULT_FONT_SIZE", "12" );
+    define( "CONTENT_PROTECTOR_DEFAULT_SHARE_AUTH_DURATION", "3600" ); // One hour (in seconds)
     define( "CONTENT_PROTECTOR_DEFAULT_FONT_WEIGHT", "400" );
     // Required for styling JQuery UI plugins
     define( "CONTENT_PROTECTOR_JQUERY_UI_CSS", CONTENT_PROTECTOR_PLUGIN_URL . "/css/jqueryui/1.10.3/themes/smoothness/jquery-ui.css" );
@@ -39,10 +40,12 @@ if ( !class_exists("contentProtectorPlugin") ) {
      * the possibility of name collisions with other plugins.
      */
     class contentProtectorPlugin {
-				
+
+        private $default_share_auth_values;
+
 		function contentProtectorPlugin() {
 			//constructor
-		}
+        }
 
         /**
          * Gets the colors from the active Theme's stylesheet (style.css)
@@ -154,17 +157,29 @@ if ( !class_exists("contentProtectorPlugin") ) {
             else
                 return;
 
-            if ( ( isset( $_POST['content-protector-submit'] ) ) && ( isset( $_POST['content-protector-expires'] ) )
-                && ( crypt( $_POST['content-protector-password'], $_POST['content-protector-token'] ) == $_POST['content-protector-token'] ) )  {
-                    if ( !is_int( $_POST['content-protector-expires'] ) )
-                        $expires = strtotime( $_POST['content-protector-expires'] );
-                    else
-                        $expires = time() + (int)$_POST['content-protector-expires'];
+            if ( ( isset( $_POST['content-protector-submit'] ) )
+            && ( isset( $_POST['content-protector-expires'] ) )
+            && ( crypt( $_POST['content-protector-password'], $_POST['content-protector-token'] ) == $_POST['content-protector-token'] ) )  {
+                if ( !is_int( $_POST['content-protector-expires'] ) )
+                    $expires = strtotime( $_POST['content-protector-expires'] );
+                else
+                    $expires = time() + (int)$_POST['content-protector-expires'];
 
-                    $cookie_name = CONTENT_PROTECTOR_COOKIE_ID . md5( $_POST['content-protector-ident'] . get_permalink( $the_post_id ) );
-                    $cookie_val = md5( $_POST['content-protector-password'] . $_POST['content-protector-expires'] . $_POST['content-protector-ident'] . get_permalink( $the_post_id ) );
-                    setcookie( $cookie_name, $cookie_val, $expires, COOKIEPATH, COOKIE_DOMAIN );
+                $cookie_name = CONTENT_PROTECTOR_COOKIE_ID . md5( $_POST['content-protector-ident'] . get_permalink( $the_post_id ) );
+                $cookie_val = md5( $_POST['content-protector-password'] . $_POST['content-protector-expires'] . $_POST['content-protector-ident'] . get_permalink( $the_post_id ) );
+                setcookie( $cookie_name, $cookie_val, $expires, COOKIEPATH, COOKIE_DOMAIN );
+                $share_auth = get_option( CONTENT_PROTECTOR_HANDLE . '_share_auth', array() );
+                if ( !empty( $share_auth ) ) {
+                    $share_auth_cookie_name = CONTENT_PROTECTOR_COOKIE_ID . "share_auth";
+                    if ( ( isset( $share_auth['same_identifier'] ) ) && ( $share_auth['same_identifier'] == "1" ) )
+                        $share_auth_cookie_name .= "_" . md5( $_POST['content-protector-ident'] );
+                    if ( ( isset( $share_auth['same_page'] ) ) && ( $share_auth['same_page'] == "1" ) )
+                        $share_auth_cookie_name .= "_" . md5( get_permalink( $the_post_id ) );
+                    $share_auth_cookie_expires = time() + get_option( CONTENT_PROTECTOR_HANDLE . '_share_auth_duration', CONTENT_PROTECTOR_DEFAULT_SHARE_AUTH_DURATION );
+                    setcookie( $share_auth_cookie_name, md5( $_POST['content-protector-password'] ), $share_auth_cookie_expires, COOKIEPATH, COOKIE_DOMAIN );
                 }
+
+            }
         }
 
         /**
@@ -227,9 +242,22 @@ if ( !class_exists("contentProtectorPlugin") ) {
 
             $isAuthorized = false; $successMessage = "";
             $cookie_name = CONTENT_PROTECTOR_COOKIE_ID . md5( $ident . get_permalink( $post->ID ) );
+            $share_auth = get_option( CONTENT_PROTECTOR_HANDLE . '_share_auth', array() );
+            $share_auth_cookie_name = CONTENT_PROTECTOR_COOKIE_ID . "share_auth";
+            if ( !empty( $share_auth ) ) {
+                if ( ( isset( $share_auth['same_identifier'] ) ) && ( $share_auth['same_identifier'] == "1" ) )
+                    $share_auth_cookie_name .= "_" . md5( $ident );
+                if ( ( isset( $share_auth['same_page'] ) ) && ( $share_auth['same_page'] == "1" ) )
+                    $share_auth_cookie_name .= "_" . md5( get_permalink( $post->ID ) );
+            }
 
-            if ( ( isset( $_COOKIE[$cookie_name] ) ) && ( $_COOKIE[$cookie_name] == md5( $password . $cookie_expires . $ident . get_permalink( $post->ID ) ) ) )
+            // Authorization by group cookie
+            if ( ( !empty( $share_auth ) ) && ( isset( $_COOKIE[$share_auth_cookie_name] ) ) && ( $_COOKIE[$share_auth_cookie_name] == md5( $password ) ) )
                 $isAuthorized = true;
+            // ...or authorization by individual cookie
+            elseif ( ( isset( $_COOKIE[$cookie_name] ) ) && ( $_COOKIE[$cookie_name] == md5( $password . $cookie_expires . $ident . get_permalink( $post->ID ) ) ) )
+                $isAuthorized = true;
+            // ...or authorization by $_POST
             elseif ( ( ( isset( $_POST['content-protector-password'] ) ) && ( $_POST['content-protector-password'] === $password ) )
                 && ( ( isset( $_POST['content-protector-ident'] ) ) && ( $_POST['content-protector-ident'] === $ident ) ) ) {
                 $isAuthorized = true;
@@ -462,11 +490,15 @@ if ( !class_exists("contentProtectorPlugin") ) {
             $plugin_page = add_options_page( __( 'Content Protector', CONTENT_PROTECTOR_SLUG ), __( 'Content Protector', CONTENT_PROTECTOR_SLUG ), 'edit_posts', CONTENT_PROTECTOR_HANDLE, array( &$this, 'drawSettingsPage' ) );
             add_action( "admin_print_styles-" . $plugin_page, array( &$this, "addAdminHeaderCode" ) );
 
-            add_settings_section( CONTENT_PROTECTOR_HANDLE . '_password_settings_section', __( 'Password Settings', CONTENT_PROTECTOR_SLUG ), array( &$this, '__passwordSettingsSectionFieldCallback' ), CONTENT_PROTECTOR_HANDLE . '_password_settings_subpage' );
-            // Add the fields for the Password Settings section
-            add_settings_field( CONTENT_PROTECTOR_HANDLE . '_encryption_algorithm', __( 'Encryption Algorithm', CONTENT_PROTECTOR_SLUG ), array( &$this, '__encryptionAlgorithmFieldCallback' ), CONTENT_PROTECTOR_HANDLE . '_password_settings_subpage', CONTENT_PROTECTOR_HANDLE . '_password_settings_section' );
+            add_settings_section( CONTENT_PROTECTOR_HANDLE . '_general_settings_section', __( 'General Settings', CONTENT_PROTECTOR_SLUG ), array( &$this, '__generalSettingsSectionFieldCallback' ), CONTENT_PROTECTOR_HANDLE . '_general_settings_subpage' );
+            // Add the fields for the General Settings section
+            add_settings_field( CONTENT_PROTECTOR_HANDLE . '_encryption_algorithm', __( 'Encryption Algorithm', CONTENT_PROTECTOR_SLUG ), array( &$this, '__encryptionAlgorithmFieldCallback' ), CONTENT_PROTECTOR_HANDLE . '_general_settings_subpage', CONTENT_PROTECTOR_HANDLE . '_general_settings_section' );
+            add_settings_field( CONTENT_PROTECTOR_HANDLE . '_share_auth', __( 'Shared Authorization', CONTENT_PROTECTOR_SLUG ), array( &$this, '__shareAuthFieldCallback' ), CONTENT_PROTECTOR_HANDLE . '_general_settings_subpage', CONTENT_PROTECTOR_HANDLE . '_general_settings_section' );
+            add_settings_field( CONTENT_PROTECTOR_HANDLE . '_share_auth_duration', __( 'Shared Authorization Cookie Duration', CONTENT_PROTECTOR_SLUG ), array( &$this, '__shareAuthDurationFieldCallback' ), CONTENT_PROTECTOR_HANDLE . '_general_settings_subpage', CONTENT_PROTECTOR_HANDLE . '_general_settings_section' );
             // Register our setting so that $_POST handling is done for us and our callback function just has to echo the HTML
-            register_setting( CONTENT_PROTECTOR_HANDLE . '_password_settings_group', CONTENT_PROTECTOR_HANDLE . '_encryption_algorithm', 'esc_attr' );
+            register_setting( CONTENT_PROTECTOR_HANDLE . '_general_settings_group', CONTENT_PROTECTOR_HANDLE . '_encryption_algorithm', 'esc_attr' );
+            register_setting( CONTENT_PROTECTOR_HANDLE . '_general_settings_group', CONTENT_PROTECTOR_HANDLE . '_share_auth', '' );
+            register_setting( CONTENT_PROTECTOR_HANDLE . '_general_settings_group', CONTENT_PROTECTOR_HANDLE . '_share_auth_duration', 'intval' );
 
             add_settings_section( CONTENT_PROTECTOR_HANDLE . '_form_instructions_settings_section', __( 'Form Instructions Settings', CONTENT_PROTECTOR_SLUG ), array( &$this, '__formInstructionsSettingsSectionFieldCallback' ), CONTENT_PROTECTOR_HANDLE . '_form_instructions_settings_subpage' );
             // Add the fields for the Form Instructions Settings section
@@ -813,10 +845,8 @@ if ( !class_exists("contentProtectorPlugin") ) {
             echo __( "Apply custom CSS to your access form. <strong>Knowledge of CSS required.</strong>", CONTENT_PROTECTOR_SLUG );
         }
 
-        function __passwordSettingsSectionFieldCallback() {
-            echo sprintf( __( "Control how the password for your protected content is encrypted. More info at <a href=\"%1\$s\">%2\$s</a>.", CONTENT_PROTECTOR_SLUG ),
-                _x( "http://www.php.net/manual/en/function.crypt.php", "URL for PHP's crypt() man page (language-specific)", CONTENT_PROTECTOR_SLUG ),
-                _x( "PHP's crypt() man page", "Link for PHP's crypt() man page (language-specific)", CONTENT_PROTECTOR_SLUG ) );
+        function __generalSettingsSectionFieldCallback() {
+            echo __( "Control how your content is protected.", CONTENT_PROTECTOR_SLUG );
         }
 
         function __encryptionAlgorithmFieldCallback() {
@@ -831,12 +861,31 @@ if ( !class_exists("contentProtectorPlugin") ) {
             echo "<select name=\"" . CONTENT_PROTECTOR_HANDLE . "_encryption_algorithm\" id=\"" . CONTENT_PROTECTOR_HANDLE . "_encryption_algorithm\">";
             foreach ( $option_values as $value => $label)  {
                 if ( ( defined( $value ) ) && ( constant( $value ) === 1 ) )
-                    echo '<option value="' . $value .'" ' . selected( $value, $current_value, false ) . ' >' . $label . '</option>';
+                    echo '<option value="' . $value .'" ' . selected( $value, $current_value, false ) . '>' . $label . '</option>';
             }
             echo '</select>';
             echo "<br />" . __( "Select the encryption algorithm to encrypt the password for your protected content. Only those algorithms supported by your server are listed.", CONTENT_PROTECTOR_SLUG );
+            echo "<br />" . sprintf( __( "More info at <a href=\"%1\$s\">%2\$s</a>.", CONTENT_PROTECTOR_SLUG ),
+                _x( "http://www.php.net/manual/en/function.crypt.php", "URL for PHP's crypt() man page (language-specific)", CONTENT_PROTECTOR_SLUG ),
+                _x( "PHP's crypt() man page", "Link text for PHP's crypt() man page (language-specific)", CONTENT_PROTECTOR_SLUG ) );
         }
 
+        function __shareAuthFieldCallback() {
+            echo "<p>" . __( "If checked, sets a cookie to share authorization among protected content sections if the sections share specific properties.", CONTENT_PROTECTOR_SLUG ) . "</p>";
+            $current_values = get_option( CONTENT_PROTECTOR_HANDLE . '_share_auth', array() );
+            echo '<input type="checkbox" name="' . CONTENT_PROTECTOR_HANDLE . '_share_auth[same_page]" id="' . CONTENT_PROTECTOR_HANDLE . '_share_auth_same_page" value="1"' . ( ( ( isset( $current_values['same_page'] ) ) && ( $current_values['same_page'] == "1" ) ) ? ' checked="checked"' : '' ) . ' />';
+            echo '<label for="' . CONTENT_PROTECTOR_HANDLE . '_share_auth_same_page">' . __( "Share authorization for protected content that share the same Post/Page and Password", CONTENT_PROTECTOR_SLUG ) . '</label><br />';
+            echo '<input type="checkbox" name="' . CONTENT_PROTECTOR_HANDLE . '_share_auth[same_identifier]" id="' . CONTENT_PROTECTOR_HANDLE . '_share_auth_same_identifier" value="1"' . ( ( ( isset( $current_values['same_identifier']  ) ) && ( $current_values['same_identifier'] == "1" ) ) ? ' checked="checked"' : '' ) . ' />';
+            echo '<label for="' . CONTENT_PROTECTOR_HANDLE . '_share_auth_same_identifier">' . __( "Share authorization for protected content that share the same Identifier and Password", CONTENT_PROTECTOR_SLUG ) . '</label><br />';
+            echo "<p>" . __( "NOTE: Visitors must successfully log into one matching protected content section in order to automatically access the others.", CONTENT_PROTECTOR_SLUG ) . "</p>";
+        }
+
+
+        function __shareAuthDurationFieldCallback() {
+            $current_value = get_option( CONTENT_PROTECTOR_HANDLE . '_share_auth_duration', CONTENT_PROTECTOR_DEFAULT_SHARE_AUTH_DURATION );
+            echo '<input type="text" name="' . CONTENT_PROTECTOR_HANDLE . '_share_auth_duration' . '" id="' . CONTENT_PROTECTOR_HANDLE . '_share_auth_duration' . '" value="' . $current_value . '" size="7" style="width: 100px;" />';
+            echo "<p>" . __( "Duration (in seconds) for any shared authorization cookies.  Once a shared authorization cookie expires, any cookies previously set for individual protected content sections in the group will be referenced instead.", CONTENT_PROTECTOR_SLUG ) . "</p>";
+        }
         /**
          * Prints out the Settings page.
          *

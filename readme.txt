@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=5F58E
 Tags: protect, lock, password, hide, content, secret, AJAX, cookie, post, page, secure, Contact Form 7
 Requires at least: 2.0.2
 Tested up to: 3.8
-Stable tag: 1.2.2
+Stable tag: 1.3
 License: GPL2
 
 Plugin to protect content on a Page or Post, where users require a password to access that content.
@@ -18,7 +18,7 @@ Features
 
 * Set up multiple protected sections on a single Post
 * Display the protected content inline via AJAX or by reloading the page
-* Set cookies so users won't need to re-enter the password on every visit
+* Set cookies so users won't need to re-enter the password on every visit, and share authorization with groups of protected sections.
 * Apply custom CSS to your forms
 * Choose from a variety of encryption methods for your passwords (depending on your server configuration)
 * Supports Contact Form 7 in AJAX mode
@@ -51,6 +51,10 @@ Coming soon.  In the meantime, check out the <a href="http://wordpress.org/suppo
 8. If you've set a cookie, the success message is only shown on initial authorization. This is how the unlocked content will be shown until the cookie expires.
 
 == Changelog ==
+
+= 1.3 =
+* Added "Shared Authorization" feature
+* Renamed "Password Settings" to "General Settings"
 
 = 1.2.2 =
 * Added support for Contact Form 7 when using AJAX
@@ -103,7 +107,7 @@ NOTE: The shortcode can be built using the built-in TinyMCE dialog.  When in dou
 expire when the browser is closed.  If it's a string, it can be either a duration (e.g., "2 weeks") or a human-readable date/time description
 with timezone identifier (e.g., "January 1, 2014 12:01 AM America/New York"). The plugin uses PHP's <a href="http://www.php.net/manual/en/function.strtotime.php">strtotime</a>
 function to process dates/times, so anything it can understand can be used depending on your server configuration.
-2. While the use of `identifier` is optional, you *must* set it if you want to apply custom CSS or use AJAX with a specific access form.
+2. While the use of `identifier` is optional, you *must* set it if you want to apply custom CSS or use AJAX with a specific access form, or to use Shared Authorization.
 3. While you don't need to set `identifier` if you want to want to set a cookie for specific protected content, editing that content in the future will invalidate any
 cookies set for it (this may actually be desired behaviour, depending on what you're trying to do).
 4. When you set an identifier for protected content, the identifier gets appended onto the existing DOM IDs in its access form.  For example if you set `identifier="Bob"`

@@ -1,10 +1,10 @@
 === Content Protector ===
 Contributors: kjvtough
-Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=5F58ELJ9R3PVL&lc=CA&item_name=Content%20Protector%20Wordpress%20Plugin%20Donation&currency_code=CAD&bn=PP%2dDonationsBF%3abtn_donateCC_LG%2egif%3aNonHosted
+Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=5F58ELJ9R3PVL&lc=CA&item_name=Content%20Protector%20Wordpress%20Plugin%20Donation&currency_code=USD&bn=PP%2dDonationsBF%3abtn_donateCC_LG%2egif%3aNonHosted
 Tags: protect, lock, password, hide, content, secret, AJAX, cookie, post, page, secure, Contact Form 7
 Requires at least: 2.0.2
-Tested up to: 3.8
-Stable tag: 1.3
+Tested up to: 3.9
+Stable tag: 1.4
 License: GPL2
 
 Plugin to protect content on a Page or Post, where users require a password to access that content.
@@ -51,6 +51,9 @@ Coming soon.  In the meantime, check out the <a href="http://wordpress.org/suppo
 8. If you've set a cookie, the success message is only shown on initial authorization. This is how the unlocked content will be shown until the cookie expires.
 
 == Changelog ==
+
+= 1.4 =
+* Added "Display Success Message" option
 
 = 1.3 =
 * Added "Shared Authorization" feature

@@ -5,7 +5,7 @@ Text Domain: content-protector
 Plugin URI: http://wordpress.org/plugins/content-protector/
 Description: Plugin to password-protect portions of a Page or Post.
 Author: K. Tough
-Version: 1.3
+Version: 1.4
 Author URI: http://wordpress.org/plugins/content-protector/
 */
 if ( !class_exists("contentProtectorPlugin") ) {
@@ -261,8 +261,12 @@ if ( !class_exists("contentProtectorPlugin") ) {
             elseif ( ( ( isset( $_POST['content-protector-password'] ) ) && ( $_POST['content-protector-password'] === $password ) )
                 && ( ( isset( $_POST['content-protector-ident'] ) ) && ( $_POST['content-protector-ident'] === $ident ) ) ) {
                 $isAuthorized = true;
-                // We only want to see this on initial authorization, not when the cookie authorizes you
-                $successMessage = "<div id=\"content-protector-correct-password" . $identifier . "\" class=\"content-protector-correct-password\">" . get_option( CONTENT_PROTECTOR_HANDLE . '_success_message', CONTENT_PROTECTOR_DEFAULT_SUCCESS_MESSAGE ) . "</div>";
+                // We only want to see this on initial authorization, not whenever the cookie authorizes you
+                $display_success_message = get_option( CONTENT_PROTECTOR_HANDLE . '_success_message_display', "0" );
+                if ( $display_success_message == "1" )
+                    $successMessage = "<div id=\"content-protector-correct-password" . $identifier . "\" class=\"content-protector-correct-password\">" . get_option( CONTENT_PROTECTOR_HANDLE . '_success_message', CONTENT_PROTECTOR_DEFAULT_SUCCESS_MESSAGE ) . "</div>";
+                else
+                    $successMessage = "";
             }
 
             if ( $isAuthorized ) {
@@ -326,7 +330,11 @@ if ( !class_exists("contentProtectorPlugin") ) {
                                     // Right instance, right password.  Let's roll!
                                     if ( strlen( $cookie_expires ) > 0 )
                                         $this->setCookie();
-                                    $successMessage = "<div id=\"content-protector-correct-password" . $identifier . "\" class=\"content-protector-correct-password\">" . get_option( CONTENT_PROTECTOR_HANDLE . '_success_message', CONTENT_PROTECTOR_DEFAULT_SUCCESS_MESSAGE ) . "</div>";
+                                    $display_success_message = get_option( CONTENT_PROTECTOR_HANDLE . '_success_message_display', "0" );
+                                    if ( $display_success_message == "1" )
+                                        $successMessage = "<div id=\"content-protector-correct-password" . $identifier . "\" class=\"content-protector-correct-password\">" . get_option( CONTENT_PROTECTOR_HANDLE . '_success_message', CONTENT_PROTECTOR_DEFAULT_SUCCESS_MESSAGE ) . "</div>";
+                                    else
+                                        $successMessage = "";
                                     $response = $successMessage .  apply_filters( 'the_content', $match[5] );
 
                                     // response output
@@ -526,11 +534,13 @@ if ( !class_exists("contentProtectorPlugin") ) {
 
             add_settings_section( CONTENT_PROTECTOR_HANDLE . '_success_message_settings_section', __( 'Success Message Settings', CONTENT_PROTECTOR_SLUG ), array( &$this, '__successMessageSettingsSectionFieldCallback' ), CONTENT_PROTECTOR_HANDLE . '_success_message_settings_subpage' );
             // Add the fields for the Success Message Settings section
+            add_settings_field( CONTENT_PROTECTOR_HANDLE . '_success_message_display', __( 'Display Success Message', CONTENT_PROTECTOR_SLUG ), array( &$this, '__successMessageDisplayFieldCallback' ), CONTENT_PROTECTOR_HANDLE . '_success_message_settings_subpage', CONTENT_PROTECTOR_HANDLE . '_success_message_settings_section' );
             add_settings_field( CONTENT_PROTECTOR_HANDLE . '_success_message', __( 'Message Text', CONTENT_PROTECTOR_SLUG ), array( &$this, '__successMessageFieldCallback' ), CONTENT_PROTECTOR_HANDLE . '_success_message_settings_subpage', CONTENT_PROTECTOR_HANDLE . '_success_message_settings_section' );
             add_settings_field( CONTENT_PROTECTOR_HANDLE . '_success_message_font_weight', __( 'Font Weight', CONTENT_PROTECTOR_SLUG ), array( &$this, '__successMessageFontWeightFieldCallback' ), CONTENT_PROTECTOR_HANDLE . '_success_message_settings_subpage', CONTENT_PROTECTOR_HANDLE . '_success_message_settings_section' );
             add_settings_field( CONTENT_PROTECTOR_HANDLE . '_success_message_font_size', __( 'Font Size', CONTENT_PROTECTOR_SLUG ), array( &$this, '__successMessageFontSizeFieldCallback' ), CONTENT_PROTECTOR_HANDLE . '_success_message_settings_subpage', CONTENT_PROTECTOR_HANDLE . '_success_message_settings_section' );
             add_settings_field( CONTENT_PROTECTOR_HANDLE . '_success_message_color', __( 'Text Color', CONTENT_PROTECTOR_SLUG ), array( &$this, '__successMessageColorFieldCallback' ), CONTENT_PROTECTOR_HANDLE . '_success_message_settings_subpage', CONTENT_PROTECTOR_HANDLE . '_success_message_settings_section' );
             // Register our setting so that $_POST handling is done for us and our callback function just has to echo the HTML
+            register_setting( CONTENT_PROTECTOR_HANDLE . '_success_message_settings_group', CONTENT_PROTECTOR_HANDLE . '_success_message_display', '' );
             register_setting( CONTENT_PROTECTOR_HANDLE . '_success_message_settings_group', CONTENT_PROTECTOR_HANDLE . '_success_message', 'esc_attr' );
             register_setting( CONTENT_PROTECTOR_HANDLE . '_success_message_settings_group', CONTENT_PROTECTOR_HANDLE . '_success_message_font_weight', 'esc_attr' );
             register_setting( CONTENT_PROTECTOR_HANDLE . '_success_message_settings_group', CONTENT_PROTECTOR_HANDLE . '_success_message_font_size', 'esc_attr' );
@@ -620,14 +630,14 @@ if ( !class_exists("contentProtectorPlugin") ) {
         }
 
         function __ajaxLoadingMessageSettingsSectionFieldCallback() {
-            _e("Customize the &quot;Loading&quot; message on the access forms when using AJAX.", CONTENT_PROTECTOR_SLUG );
+            _e("Customize the &quot;Loading&quot; message on the access forms when using AJAX for inline loading of your protected content.", CONTENT_PROTECTOR_SLUG );
         }
 
         function __ajaxLoadingMessageFieldCallback() {
             echo '<input type="text" class="regular-text" name="' . CONTENT_PROTECTOR_HANDLE . '_ajax_loading_message' . '" id="' . CONTENT_PROTECTOR_HANDLE . '_ajax_loading_message' . '" value="' . get_option( CONTENT_PROTECTOR_HANDLE . '_ajax_loading_message', CONTENT_PROTECTOR_DEFAULT_AJAX_LOADING_MESSAGE ) . '" />';
             echo "&nbsp;<a href=\"javascript:;\" id=\"ajax-loading-message-reset\">" . __( "Reset To Default", CONTENT_PROTECTOR_SLUG ) . "</a>";
             echo "<div style=\"clear: both;\"></div>";
-            echo __( "When using AJAX, the message displayed while the password is being checked.", CONTENT_PROTECTOR_SLUG );
+            echo __( "When using AJAX, this message is displayed while the password is being checked.", CONTENT_PROTECTOR_SLUG );
             echo "<br /><em>" . sprintf( __( "You can manually style this on all access forms using the %s CSS class.", CONTENT_PROTECTOR_SLUG ), "</em><code>div.content-protector-ajaxLoading</code><em>" ) . "</em>";
         }
 
@@ -664,6 +674,12 @@ if ( !class_exists("contentProtectorPlugin") ) {
 
         function __successMessageSettingsSectionFieldCallback() {
             _e("Customize the message displayed when the correct password is entered.", CONTENT_PROTECTOR_SLUG );
+        }
+
+        function __successMessageDisplayFieldCallback() {
+            $current_value = get_option( CONTENT_PROTECTOR_HANDLE . '_success_message_display', "" );
+            echo '<input type="checkbox" name="' . CONTENT_PROTECTOR_HANDLE . '_success_message_display" id="' . CONTENT_PROTECTOR_HANDLE . '_success_message_display" value="1"' . ( ( ( isset( $current_value ) ) && ( $current_value == "1" ) ) ? ' checked="checked"' : '' ) . ' />';
+            echo '&nbsp;<label for="' . CONTENT_PROTECTOR_HANDLE . '_success_message_display">' . __( "Show the success message when a user first successfully logs in.", CONTENT_PROTECTOR_SLUG ) . '</label>';
         }
 
         function __successMessageFieldCallback() {
@@ -879,7 +895,6 @@ if ( !class_exists("contentProtectorPlugin") ) {
             echo '<label for="' . CONTENT_PROTECTOR_HANDLE . '_share_auth_same_identifier">' . __( "Share authorization for protected content that share the same Identifier and Password", CONTENT_PROTECTOR_SLUG ) . '</label><br />';
             echo "<p>" . __( "NOTE: Visitors must successfully log into one matching protected content section in order to automatically access the others.", CONTENT_PROTECTOR_SLUG ) . "</p>";
         }
-
 
         function __shareAuthDurationFieldCallback() {
             $current_value = get_option( CONTENT_PROTECTOR_HANDLE . '_share_auth_duration', CONTENT_PROTECTOR_DEFAULT_SHARE_AUTH_DURATION );

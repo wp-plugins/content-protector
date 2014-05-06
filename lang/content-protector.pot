@@ -2,9 +2,9 @@
 # This file is distributed under the same license as the Content Protector package.
 msgid ""
 msgstr ""
-"Project-Id-Version: Content Protector 1.3\n"
+"Project-Id-Version: Content Protector 1.4\n"
 "Report-Msgid-Bugs-To: http://wordpress.org/tag/content-protector\n"
-"POT-Creation-Date: 2014-03-26 20:01:58+00:00\n"
+"POT-Creation-Date: 2014-05-06 00:03:06+00:00\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -35,7 +35,7 @@ msgid "Submit"
 msgstr ""
 
 #: content-protector.php:206 content-protector.php:219
-#: content-protector.php:415
+#: content-protector.php:423
 msgid "Error"
 msgstr ""
 
@@ -53,424 +53,433 @@ msgstr ""
 msgid "No AJAX allowed in this %s shortcode unless an identifier is set!"
 msgstr ""
 
-#: content-protector.php:416
+#: content-protector.php:424
 msgid ""
 "Something unexpected has happened along the way.  The specific details are "
 "below:"
 msgstr ""
 
-#: content-protector.php:427
+#: content-protector.php:435
 msgid "These styles will be applied to all Content Protector access forms."
 msgstr ""
 
-#: content-protector.php:429 content-protector.php:442
+#: content-protector.php:437 content-protector.php:450
 msgid "Style the entire form"
 msgstr ""
 
-#: content-protector.php:431 content-protector.php:444
+#: content-protector.php:439 content-protector.php:452
 msgid "Style the form instructions"
 msgstr ""
 
-#: content-protector.php:433 content-protector.php:446
+#: content-protector.php:441 content-protector.php:454
 msgid "Style the message when the correct password is entered"
 msgstr ""
 
-#: content-protector.php:435 content-protector.php:448
+#: content-protector.php:443 content-protector.php:456
 msgid "Style the error message for an incorrect password"
 msgstr ""
 
-#: content-protector.php:437 content-protector.php:450
+#: content-protector.php:445 content-protector.php:458
 msgid "Style the Submit button"
 msgstr ""
 
-#: content-protector.php:439 content-protector.php:452
+#: content-protector.php:447 content-protector.php:460
 msgid "Style the AJAX loading message"
 msgstr ""
 
-#: content-protector.php:440
+#: content-protector.php:448
 msgid ""
 "These styles will be applied to the Content Protector access form whose "
 "identifier is &quot;{id}&quot;."
 msgstr ""
 
-#: content-protector.php:480
+#: content-protector.php:488
 msgid ""
 "Enter the Content Protector identifier \n"
 "whose form you want to customize:"
 msgstr ""
 
-#. #-#-#-#-#  plugin.pot (Content Protector 1.3)  #-#-#-#-#
+#. #-#-#-#-#  plugin.pot (Content Protector 1.4)  #-#-#-#-#
 #. Plugin Name of the plugin/theme
-#: content-protector.php:490 screens/admin_screen.php:3
+#: content-protector.php:498 screens/admin_screen.php:3
 msgid "Content Protector"
 msgstr ""
 
-#: content-protector.php:493
+#: content-protector.php:501
 msgid "General Settings"
 msgstr ""
 
-#: content-protector.php:495
+#: content-protector.php:503
 msgid "Encryption Algorithm"
 msgstr ""
 
-#: content-protector.php:496
+#: content-protector.php:504
 msgid "Shared Authorization"
 msgstr ""
 
-#: content-protector.php:497
+#: content-protector.php:505
 msgid "Shared Authorization Cookie Duration"
 msgstr ""
 
-#: content-protector.php:503
+#: content-protector.php:511
 msgid "Form Instructions Settings"
 msgstr ""
 
-#: content-protector.php:505
+#: content-protector.php:513
 msgid "Instructions Text"
 msgstr ""
 
-#: content-protector.php:506 content-protector.php:518
-#: content-protector.php:530 content-protector.php:542
+#: content-protector.php:514 content-protector.php:526
+#: content-protector.php:539 content-protector.php:552
 msgid "Font Weight"
 msgstr ""
 
-#: content-protector.php:507 content-protector.php:531
-#: content-protector.php:543
+#: content-protector.php:515 content-protector.php:540
+#: content-protector.php:553
 msgid "Font Size"
 msgstr ""
 
-#: content-protector.php:508 content-protector.php:520
-#: content-protector.php:532 content-protector.php:544
-#: content-protector.php:554
+#: content-protector.php:516 content-protector.php:528
+#: content-protector.php:541 content-protector.php:554
+#: content-protector.php:564
 msgid "Text Color"
 msgstr ""
 
-#: content-protector.php:515
+#: content-protector.php:523
 msgid "AJAX Loading Message Settings"
 msgstr ""
 
-#: content-protector.php:517 content-protector.php:529
-#: content-protector.php:541
+#: content-protector.php:525 content-protector.php:538
+#: content-protector.php:551
 msgid "Message Text"
 msgstr ""
 
-#: content-protector.php:519
+#: content-protector.php:527
 msgid "Font Style"
 msgstr ""
 
-#: content-protector.php:527
+#: content-protector.php:535
 msgid "Success Message Settings"
 msgstr ""
 
-#: content-protector.php:539
+#: content-protector.php:537
+msgid "Display Success Message"
+msgstr ""
+
+#: content-protector.php:549
 msgid "Error Message Settings"
 msgstr ""
 
-#: content-protector.php:551
+#: content-protector.php:561
 msgid "Form Submit Button Settings"
 msgstr ""
 
-#: content-protector.php:553
+#: content-protector.php:563
 msgid "Label Text"
 msgstr ""
 
-#: content-protector.php:555
+#: content-protector.php:565
 msgid "Button Color"
 msgstr ""
 
-#: content-protector.php:561
+#: content-protector.php:571
 msgid "Form CSS Settings"
 msgstr ""
 
-#: content-protector.php:563
+#: content-protector.php:573
 msgid "Border Style"
 msgstr ""
 
-#: content-protector.php:564
+#: content-protector.php:574
 msgid "Border Color"
 msgstr ""
 
-#: content-protector.php:565
+#: content-protector.php:575
 msgid "Border Width"
 msgstr ""
 
-#: content-protector.php:566
+#: content-protector.php:576
 msgid "Border Radius"
 msgstr ""
 
-#: content-protector.php:567
+#: content-protector.php:577
 msgid "Padding"
 msgstr ""
 
-#: content-protector.php:568
+#: content-protector.php:578
 msgid "Background Color"
 msgstr ""
 
-#: content-protector.php:569
+#: content-protector.php:579
 msgid "Additional CSS"
 msgstr ""
 
-#: content-protector.php:581
+#: content-protector.php:591
 msgid "Customize the form instructions on the access forms."
 msgstr ""
 
-#: content-protector.php:586 content-protector.php:628
-#: content-protector.php:671 content-protector.php:713
-#: content-protector.php:755
+#: content-protector.php:596 content-protector.php:638
+#: content-protector.php:687 content-protector.php:729
+#: content-protector.php:771
 msgid "Reset To Default"
 msgstr ""
 
-#: content-protector.php:588
+#: content-protector.php:598
 msgid "Instructions for your access form."
 msgstr ""
 
-#: content-protector.php:589 content-protector.php:631
-#: content-protector.php:674 content-protector.php:716
+#: content-protector.php:599 content-protector.php:641
+#: content-protector.php:690 content-protector.php:732
 msgid "You can manually style this on all access forms using the %s CSS class."
 msgstr ""
 
-#: content-protector.php:601
+#: content-protector.php:611
 msgid "Font size of the form instructions text."
 msgstr ""
 
-#: content-protector.php:613
+#: content-protector.php:623
 msgid ""
 "Font weight of the form instructions text (400 is normal, 700 is <b>bold</"
 "b>)."
 msgstr ""
 
-#: content-protector.php:619
+#: content-protector.php:629
 msgid "Color of the form instructions text."
 msgstr ""
 
-#: content-protector.php:623
+#: content-protector.php:633
 msgid ""
 "Customize the &quot;Loading&quot; message on the access forms when using "
-"AJAX."
+"AJAX for inline loading of your protected content."
 msgstr ""
 
-#: content-protector.php:630
+#: content-protector.php:640
 msgid ""
-"When using AJAX, the message displayed while the password is being checked."
+"When using AJAX, this message is displayed while the password is being "
+"checked."
 msgstr ""
 
-#: content-protector.php:643
+#: content-protector.php:653
 msgid ""
 "Font weight of the AJAX loading message text (400 is normal, 700 is <b>bold</"
 "b>)."
 msgstr ""
 
-#: content-protector.php:656
+#: content-protector.php:666
 msgid "Font style of the AJAX loading message text."
 msgstr ""
 
-#: content-protector.php:662
+#: content-protector.php:672
 msgid "Color of the AJAX loading message text."
 msgstr ""
 
-#: content-protector.php:666
+#: content-protector.php:676
 msgid "Customize the message displayed when the correct password is entered."
 msgstr ""
 
-#: content-protector.php:673
+#: content-protector.php:682
+msgid "Show the success message when a user first successfully logs in."
+msgstr ""
+
+#: content-protector.php:689
 msgid "Message when your users enter the correct password."
 msgstr ""
 
-#: content-protector.php:686
+#: content-protector.php:702
 msgid "Font size of the success message text."
 msgstr ""
 
-#: content-protector.php:698
+#: content-protector.php:714
 msgid ""
 "Font weight of the success message text (400 is normal, 700 is <b>bold</b>)."
 msgstr ""
 
-#: content-protector.php:704
+#: content-protector.php:720
 msgid "Color of the success message text."
 msgstr ""
 
-#: content-protector.php:708
+#: content-protector.php:724
 msgid "Customize the message displayed when an incorrect password is entered."
 msgstr ""
 
-#: content-protector.php:715
+#: content-protector.php:731
 msgid "Error message when your users enter an incorrect password."
 msgstr ""
 
-#: content-protector.php:728
+#: content-protector.php:744
 msgid "Font size of the error message text."
 msgstr ""
 
-#: content-protector.php:740
+#: content-protector.php:756
 msgid ""
 "Font weight of the error message text (400 is normal, 700 is <b>bold</b>)."
 msgstr ""
 
-#: content-protector.php:746
+#: content-protector.php:762
 msgid "Color of the error message text."
 msgstr ""
 
-#: content-protector.php:750
+#: content-protector.php:766
 msgid "Customize the &quot;Submit&quot; button on the access forms."
 msgstr ""
 
-#: content-protector.php:757
+#: content-protector.php:773
 msgid "Customize the &quot;Submit&quot; button label on the form."
 msgstr ""
 
-#: content-protector.php:758
+#: content-protector.php:774
 msgid ""
 "You can manually style the form submit button on all access forms using the "
 "%s CSS class."
 msgstr ""
 
-#: content-protector.php:764
+#: content-protector.php:780
 msgid "Color of the form submit label text."
 msgstr ""
 
-#: content-protector.php:770
+#: content-protector.php:786
 msgid "Color of the form submit button."
 msgstr ""
 
-#: content-protector.php:774
+#: content-protector.php:790
 msgid "Customize the overall look-and-feel of your access forms."
 msgstr ""
 
-#: content-protector.php:775
+#: content-protector.php:791
 msgid ""
 "You can manually style the overall look of all access forms using the %s CSS "
 "class."
 msgstr ""
 
-#: content-protector.php:788
+#: content-protector.php:804
 msgid "Border style of the access form."
 msgstr ""
 
-#: content-protector.php:794
+#: content-protector.php:810
 msgid "Border color of the access form."
 msgstr ""
 
-#: content-protector.php:806
+#: content-protector.php:822
 msgid "Border radius (curvature of the corners) of the access form."
 msgstr ""
 
-#: content-protector.php:818
+#: content-protector.php:834
 msgid "Border width of the access form."
 msgstr ""
 
-#: content-protector.php:830
+#: content-protector.php:846
 msgid "Padding inside the border of the access form."
 msgstr ""
 
-#: content-protector.php:836
+#: content-protector.php:852
 msgid "Background color of the access form."
 msgstr ""
 
-#: content-protector.php:841
+#: content-protector.php:857
 msgid "Add CSS scaffolding for all access forms"
 msgstr ""
 
-#: content-protector.php:842
+#: content-protector.php:858
 msgid "Add CSS scaffolding for a specific access form"
 msgstr ""
 
-#: content-protector.php:843
+#: content-protector.php:859
 msgctxt "Clear the textarea"
 msgid "Clear"
 msgstr ""
 
-#: content-protector.php:845
+#: content-protector.php:861
 msgid ""
 "Apply custom CSS to your access form. <strong>Knowledge of CSS required.</"
 "strong>"
 msgstr ""
 
-#: content-protector.php:849
+#: content-protector.php:865
 msgid "Control how your content is protected."
 msgstr ""
 
-#: content-protector.php:853
+#: content-protector.php:869
 msgctxt "Encryption algorithm"
 msgid "Standard DES"
 msgstr ""
 
-#: content-protector.php:854
+#: content-protector.php:870
 msgctxt "Encryption algorithm"
 msgid "Extended DES"
 msgstr ""
 
-#: content-protector.php:855
+#: content-protector.php:871
 msgctxt "Encryption algorithm"
 msgid "MD5"
 msgstr ""
 
-#: content-protector.php:856
+#: content-protector.php:872
 msgctxt "Encryption algorithm"
 msgid "Blowfish"
 msgstr ""
 
-#: content-protector.php:857
+#: content-protector.php:873
 msgctxt "Encryption algorithm"
 msgid "SHA-256"
 msgstr ""
 
-#: content-protector.php:858
+#: content-protector.php:874
 msgctxt "Encryption algorithm"
 msgid "SHA-512"
 msgstr ""
 
-#: content-protector.php:867
+#: content-protector.php:883
 msgid ""
 "Select the encryption algorithm to encrypt the password for your protected "
 "content. Only those algorithms supported by your server are listed."
 msgstr ""
 
-#: content-protector.php:868
+#: content-protector.php:884
 msgid "More info at <a href=\"%1$s\">%2$s</a>."
 msgstr ""
 
-#: content-protector.php:869
+#: content-protector.php:885
 msgctxt "URL for PHP's crypt() man page (language-specific)"
 msgid "http://www.php.net/manual/en/function.crypt.php"
 msgstr ""
 
-#: content-protector.php:870
+#: content-protector.php:886
 msgctxt "Link text for PHP's crypt() man page (language-specific)"
 msgid "PHP's crypt() man page"
 msgstr ""
 
-#: content-protector.php:874
+#: content-protector.php:890
 msgid ""
 "If checked, sets a cookie to share authorization among protected content "
 "sections if the sections share specific properties."
 msgstr ""
 
-#: content-protector.php:877
+#: content-protector.php:893
 msgid ""
 "Share authorization for protected content that share the same Post/Page and "
 "Password"
 msgstr ""
 
-#: content-protector.php:879
+#: content-protector.php:895
 msgid ""
 "Share authorization for protected content that share the same Identifier and "
 "Password"
 msgstr ""
 
-#: content-protector.php:880
+#: content-protector.php:896
 msgid ""
 "NOTE: Visitors must successfully log into one matching protected content "
 "section in order to automatically access the others."
 msgstr ""
 
-#: content-protector.php:887
+#: content-protector.php:902
 msgid ""
 "Duration (in seconds) for any shared authorization cookies.  Once a shared "
 "authorization cookie expires, any cookies previously set for individual "
 "protected content sections in the group will be referenced instead."
 msgstr ""
 
-#: content-protector.php:928
+#: content-protector.php:943
 msgid "Add Content Protector shortcode"
 msgstr ""
 
@@ -535,7 +544,7 @@ msgstr ""
 
 #: tinymce_plugin/dialog.php:39
 msgctxt "TinyMCE Dialog - Use AJAX label"
-msgid "Use AJAX to load the protected content."
+msgid "Use AJAX for inline-loading of the protected content."
 msgstr ""
 
 #: tinymce_plugin/dialog.php:46
@@ -621,9 +630,9 @@ msgctxt "TinyMCE Dialog - Cancel button HTML label"
 msgid "Cancel"
 msgstr ""
 
-#. #-#-#-#-#  plugin.pot (Content Protector 1.3)  #-#-#-#-#
+#. #-#-#-#-#  plugin.pot (Content Protector 1.4)  #-#-#-#-#
 #. Plugin URI of the plugin/theme
-#. #-#-#-#-#  plugin.pot (Content Protector 1.3)  #-#-#-#-#
+#. #-#-#-#-#  plugin.pot (Content Protector 1.4)  #-#-#-#-#
 #. Author URI of the plugin/theme
 msgid "http://wordpress.org/plugins/content-protector/"
 msgstr ""

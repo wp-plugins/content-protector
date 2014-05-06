@@ -36,7 +36,7 @@
         <p>
             <input name="ajax" type="checkbox" id="ajax" value="1"/>
             <label
-                for="ajax"><?php _ex( 'Use AJAX to load the protected content.', 'TinyMCE Dialog - Use AJAX label', CONTENT_PROTECTOR_SLUG ); ?></label>
+                for="ajax"><?php _ex( 'Use AJAX for inline-loading of the protected content.', 'TinyMCE Dialog - Use AJAX label', CONTENT_PROTECTOR_SLUG ); ?></label>
         </p>
     </fieldset>
     <fieldset>

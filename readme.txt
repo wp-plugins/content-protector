@@ -1,13 +1,13 @@
 === ROT13 Encoder/Decoder ===
 Contributors: kjvtough
-Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=5F58ELJ9R3PVL&lc=CA&item_name=ROT13%20Encoder%20Wordpress%20Plugin%20Donation&currency_code=CAD&bn=PP%2dDonationsBF%3abtn_donateCC_LG%2egif%3aNonHosted
-Tags: rot13, ROT13, cipher, hide, hidden, obfuscate, spoiler, warning, trigger, punchline, solution, answer, encrypt, decrypt, encode, decode, post, page, content, comment
+Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=5F58ELJ9R3PVL&lc=CA&item_name=ROT13%20Encoder%20Wordpress%20Plugin%20Donation&currency_code=USD&bn=PP%2dDonationsBF%3abtn_donateCC_LG%2egif%3aNonHosted
+Tags: rot13, ROT13, cipher, hide, hidden, obfuscate, spoiler, warning, trigger, punchline, solution, answer, encrypt, decrypt, encode, decode, post, page, content, comment, spam, troll, trolling
 Requires at least: 2.0.2
-Tested up to: 3.8
-Stable tag: 1.5
+Tested up to: 3.9
+Stable tag: 1.6
 License: GPL2
 
-Plugin to encode and display content using the ROT13 cipher. 
+Plugin to encode/decode and display content using the ROT13 cipher.
 
 == Description ==
 
@@ -15,14 +15,15 @@ The ROT13 Encoder/Decoder plugin allows bloggers and commenters to "encrypt" par
 
 Some cases where you may want to ROT13 content:
 
-* Spoilers on a fan website when some visitors may not have caught up to the content in question.
+* Spoilers on a fan website when some visitors may not have caught up to the book/movie/TV episode being discussed.
 * Discussing sensitive topics where a trigger warning may be required.
 
-Features:
+ROT13 Encoder/Decoder Features:
 
 * Allow readers to decode by single- or double-clicking the ROT13'd text.
 * Decoded content can be displayed inline or a tooltip-style popup.
-* Visitors can also use ROT13 in their comments: e.g.  `[rot13]Spoilerific content example[/rot13]`  
+* Visitors can also use ROT13 in their comments: e.g.  `[rot13]Spoilerific content example[/rot13]`
+* Site admins can ROT13 entire comments in one click (Useful for comments that may violate community rules, but you don't necessarily want to delete).
 
 A TinyMCE menu button is added to the editor to help bloggers select text in their posts to ROT13.  
 
@@ -47,8 +48,14 @@ Hopefully everything here is straightforward, but if not, post in the <a href="h
 3. Editor screen. Use <code>[rot13]</code> and <code>[/rot13]</code> to enclose the content to be ROT13'd, or select your text and click the ROT13 Encoder button. 
 4. If activated, visitors to your blog can also ROT13 their comments.
 5. A comment with some ROT13'd content.
+6. Comments screen when the ROT13 Encoder/Decoder plugin is enabled.
 
 == Changelog ==
+= 1.6 =
+* Site admins can ROT13 entire comments from the Comments screen.
+* Dashicons support for WP 3.8 + added. Support for old-style icons in Admin/TinyMCE is deprecated.
+* Quicktags support added.
+
 = 1.5 =
 * Added some error checking on the color options.
 * New Decoding Trigger: "Hover" will decode the ROT13'd text when the mouse is over the encoded content.
@@ -63,7 +70,7 @@ should help in choosing colors that fit in with the active Theme.
 * Fixed JQuery bugs evident when shortcode is used multiple times on a single post.
 * `"click"`/`"dblclick"` events now bound using `.on()` instead of `bind()` (allows other plugins to AJAX-load
 content using the `[rot13]` shortcode without losing the decoding functionality).
-* New popup options "Border Width" and "Border Radius"
+* New popup options "Border Width" and "Border Radius".
 * No more shilling on the Settings screen. Enjoy!
 
 = 1.2 =
@@ -72,8 +79,8 @@ content using the `[rot13]` shortcode without losing the decoding functionality)
 * Allowing commenters the use of ROT13 is now an option instead of automatic.
 
 = 1.1 =
-* Fixed some default settings
-* Improved documentation
+* Fixed some default settings.
+* Improved documentation.
 
 = 1.0 =
 * Initial release.

@@ -23,7 +23,7 @@
 			ed.addButton('rot13_encoder_decoder', {
 				title : 'Display content as ROT13',
 				cmd : 'mceRot13Content',
-				image : url + '/img/rot13button.jpg'
+				image : rot13AdminTinyMCEOptionsVars.image
 			});
 
 			// Add a node change handler, selects the button in the UI when a image is selected

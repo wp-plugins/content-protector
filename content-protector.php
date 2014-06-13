@@ -5,12 +5,12 @@ Text Domain: content-protector
 Plugin URI: http://wordpress.org/plugins/content-protector/
 Description: Plugin to password-protect portions of a Page or Post.
 Author: K. Tough
-Version: 1.4
+Version: 1.4.1
 Author URI: http://wordpress.org/plugins/content-protector/
 */
 if ( !class_exists("contentProtectorPlugin") ) {
 
-    define( "CONTENT_PROTECTOR_VERSION", "1.2.2" );
+    define( "CONTENT_PROTECTOR_VERSION", "1.4.1" );
     define( "CONTENT_PROTECTOR_SLUG", "content-protector" );
     define( "CONTENT_PROTECTOR_HANDLE", "content_protector" );
     define( "CONTENT_PROTECTOR_COOKIE_ID", CONTENT_PROTECTOR_HANDLE . "_" );
@@ -30,6 +30,7 @@ if ( !class_exists("contentProtectorPlugin") ) {
     define( "CONTENT_PROTECTOR_JQUERY_UI_CSS", CONTENT_PROTECTOR_PLUGIN_URL . "/css/jqueryui/1.10.3/themes/smoothness/jquery-ui.css" );
     define( "CONTENT_PROTECTOR_JQUERY_UI_TIMEPICKER_JS", CONTENT_PROTECTOR_PLUGIN_URL . "/js/jquery-ui-timepicker-0.3.3/jquery.ui.timepicker.js" );
     define( "CONTENT_PROTECTOR_JQUERY_UI_TIMEPICKER_CSS", CONTENT_PROTECTOR_PLUGIN_URL . "/js/jquery-ui-timepicker-0.3.3/jquery.ui.timepicker.css" );
+    define( "CONTENT_PROTECTOR_CSS_DASHICONS", CONTENT_PROTECTOR_PLUGIN_URL . "/css/ca-aliencyborg-dashicons/style.css"  );
 
 
 
@@ -933,14 +934,23 @@ if ( !class_exists("contentProtectorPlugin") ) {
          *
          */
         function setTinyMCEPluginVars()  {
+            global $wp_version;
+            if ( ( ! current_user_can( 'edit_posts' ) ) && ( ! current_user_can( 'edit_pages' ) ) )
+                return;
+
             // Add only in Rich Editor mode
             if ( get_user_option( 'rich_editing' ) == 'true' ) {
+                if ( version_compare( $wp_version, "3.8", "<" ) )
+                    $image = "/lock.gif";
+                else
+                    $image = "";
                 wp_enqueue_script( CONTENT_PROTECTOR_SLUG . '-admin_tinymce_js', CONTENT_PROTECTOR_PLUGIN_URL . '/js/content-protector-admin-tinymce.js', array(), CONTENT_PROTECTOR_VERSION );
                 wp_localize_script( CONTENT_PROTECTOR_SLUG . '-admin_tinymce_js',
                     'contentProtectorAdminTinyMCEOptionsVars',
                     array( 'version' => CONTENT_PROTECTOR_VERSION,
                         'handle' => CONTENT_PROTECTOR_HANDLE,
-                        'desc' => __( "Add Content Protector shortcode", CONTENT_PROTECTOR_SLUG ) ) );
+                        'desc' => __( "Add Content Protector shortcode", CONTENT_PROTECTOR_SLUG ),
+                        'image' => $image ) );
             }
         }
 
@@ -962,7 +972,7 @@ if ( !class_exists("contentProtectorPlugin") ) {
          * @return array                The array of TinyMCE plugins with ours now loaded in as well
          */
         function addTinyMCEPlugin( $plugin_array ) {
-			$plugin_array[CONTENT_PROTECTOR_HANDLE] = CONTENT_PROTECTOR_PLUGIN_URL . "/tinymce_plugin/editor_plugin.js";
+			$plugin_array[CONTENT_PROTECTOR_HANDLE] = CONTENT_PROTECTOR_PLUGIN_URL . "/tinymce_plugin/plugin.js";
 			return $plugin_array;
 		}
 
@@ -980,12 +990,29 @@ if ( !class_exists("contentProtectorPlugin") ) {
 
 
             ob_start();
-			include("tinymce_plugin/dialog.php"); 
+			include( "tinymce_plugin/dialog.php" );
 			$content = ob_get_contents();
 			ob_end_clean();			
 			echo $content;
 			die();
 		}
+
+        /**
+         * Enqueues the CSS code necessary for custom icons for the TinyMCE editor.  Echo'd to output.
+         */
+        function addTinyMCEIcons()  {
+            wp_enqueue_style( 'ca-aliencyborg-dashicons', CONTENT_PROTECTOR_CSS_DASHICONS, false, CONTENT_PROTECTOR_VERSION );
+            ?>
+            <style type="text/css" media="screen">
+                .mce-i-content_protector:before {
+                    font: 400 24px/1 'ca-aliencyborg-dashicons' !important;
+                    padding: 0;
+                    vertical-align: top;
+                    content: '\e602';
+                }
+            </style>
+        <?php
+        }
 
         /**
          * Loads the appropriate i18n files
@@ -1013,6 +1040,7 @@ if ( isset( $contentProtectorPluginInstance ) ) {
     add_action( "admin_init", array( &$contentProtectorPluginInstance, "setTinyMCEPluginVars" ), 1 );
 	add_action( "admin_init", array( &$contentProtectorPluginInstance, "initTinyMCEPlugin" ), 2 );
     add_action( "admin_menu", array( &$contentProtectorPluginInstance, "initSettingsPage" ), 1 );
+    add_action( "admin_head", array( &$contentProtectorPluginInstance, "addTinyMCEIcons" ), 1 );
     add_action( 'wp_ajax_contentProtectorProcessFormAjax', array( &$contentProtectorPluginInstance, "contentProtectorProcessFormAjax" ), 1 );
     add_action( 'wp_ajax_nopriv_contentProtectorProcessFormAjax', array( &$contentProtectorPluginInstance, "contentProtectorProcessFormAjax" ), 1 );
     add_action( 'wp_ajax_contentProtectorPluginGetTinyMCEDialog', array( &$contentProtectorPluginInstance, "contentProtectorPluginGetTinyMCEDialog" ), 1 );

@@ -14,6 +14,7 @@
 		 * @param {string} url Absolute URL to where the plugin is located.
 		 */
 		init : function(ed, url) {
+            var buttonOpts = {};
 			// Register the command so that it can be invoked by using tinyMCE.activeEditor.execCommand('mceExample');
 			ed.addCommand('mceContentProtector', function() {
 				ed.windowManager.open({
@@ -27,16 +28,18 @@
 			});
 
 			// Register example button
-			ed.addButton(contentProtectorAdminTinyMCEOptions.handle, {
-				title : contentProtectorAdminTinyMCEOptions.desc,
-				cmd : 'mceContentProtector',
-				image : url + '/lock.gif'
-			});
+            if (contentProtectorAdminTinyMCEOptions.image.length > 0) {
+                buttonOpts.title = contentProtectorAdminTinyMCEOptions.desc;
+                buttonOpts.cmd = 'mceContentProtector';
+                buttonOpts.image = url + contentProtectorAdminTinyMCEOptions.image;
+            } else {
+                buttonOpts.title = contentProtectorAdminTinyMCEOptions.desc;
+                buttonOpts.cmd = 'mceContentProtector';
+            }
+            buttonOpts.stateSelector = "img";
 
-			// Add a node change handler, selects the button in the UI when a image is selected
-			ed.onNodeChange.add(function(ed, cm, n) {
-				cm.setActive(contentProtectorAdminTinyMCEOptions.handle, n.nodeName == 'IMG');
-			});
+            // Register example button
+            ed.addButton(contentProtectorAdminTinyMCEOptions.handle, buttonOpts);
 		},
 
 		/**

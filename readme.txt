@@ -51,6 +51,9 @@ Coming soon.  In the meantime, check out the <a href="http://wordpress.org/suppo
 8. If you've set a cookie, the success message is only shown on initial authorization. This is how the unlocked content will be shown until the cookie expires.
 
 == Changelog ==
+= 1.4.1 =
+* Dashicons support for WP 3.8 + added. Support for old-style icons in Admin/TinyMCE is deprecated.
+* Unified dashicons among all of my plugins.
 
 = 1.4 =
 * Added "Display Success Message" option

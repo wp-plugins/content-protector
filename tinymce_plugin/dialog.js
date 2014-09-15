@@ -1,5 +1,10 @@
 var contentProtectorDialog = {
     init : function() {
+        jQuery('#use_captcha').click(
+            function() {
+                jQuery('#password').val(captcha_pw);
+            }
+        );
         jQuery('#set_pc_cookie').click(
             function() {
                 if (jQuery(this).is(':checked'))  {
@@ -30,15 +35,12 @@ var contentProtectorDialog = {
                     jQuery('#expiry_duration_unit').prop('disabled', 'disabled');
                     jQuery('#expiry_date').datepicker(
                         {
-                            dateFormat: datepickerFormat,
                             changeMonth: true,
                             changeYear: true
                         }
                     );
                     jQuery('#expiry_time').timepicker(
                         {
-                            showLeadingZero: false,
-                            showPeriod: true,
                             defaultTime: 'now'
                         }
                     );

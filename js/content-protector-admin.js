@@ -16,6 +16,21 @@ jQuery(document).ready(function() {
         jQuery(contentProtectorAdminOptions.form_submit_label_id).val(contentProtectorAdminOptions.form_submit_label_default);
         return false;
     });
+    jQuery('#captcha-instructions-reset').click( function() {
+        jQuery(contentProtectorAdminOptions.captcha_instructions_id).val(contentProtectorAdminOptions.captcha_instructions_default);
+    });
+    jQuery('#captcha-width-reset').click( function() {
+        jQuery(contentProtectorAdminOptions.captcha_width_id).val(contentProtectorAdminOptions.captcha_width_default);
+        return false;
+    });
+    jQuery('#captcha-height-reset').click( function() {
+        jQuery(contentProtectorAdminOptions.captcha_height_id).val(contentProtectorAdminOptions.captcha_height_default);
+        return false;
+    });
+    jQuery('#captcha-text-chars-reset').click( function() {
+        jQuery(contentProtectorAdminOptions.captcha_text_chars_id).val(contentProtectorAdminOptions.captcha_text_chars_default);
+        return false;
+    });
     jQuery('#form-css-all').click( function() {
         jQuery(contentProtectorAdminOptions.form_css_id).val(jQuery(contentProtectorAdminOptions.form_css_id).val() + contentProtectorAdminOptions.form_css_all_default);
     });

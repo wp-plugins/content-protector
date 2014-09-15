@@ -5,27 +5,38 @@ Text Domain: content-protector
 Plugin URI: http://wordpress.org/plugins/content-protector/
 Description: Plugin to password-protect portions of a Page or Post.
 Author: K. Tough
-Version: 1.4.1
+Version: 2.0
 Author URI: http://wordpress.org/plugins/content-protector/
 */
 if ( !class_exists("contentProtectorPlugin") ) {
 
-    define( "CONTENT_PROTECTOR_VERSION", "1.4.1" );
+    define( "CONTENT_PROTECTOR_VERSION", "2.0" );
     define( "CONTENT_PROTECTOR_SLUG", "content-protector" );
     define( "CONTENT_PROTECTOR_HANDLE", "content_protector" );
     define( "CONTENT_PROTECTOR_COOKIE_ID", CONTENT_PROTECTOR_HANDLE . "_" );
 	define( "CONTENT_PROTECTOR_PLUGIN_URL", plugins_url() . '/' . CONTENT_PROTECTOR_SLUG );
-	define( "CONTENT_PROTECTOR_SHORTCODE", CONTENT_PROTECTOR_HANDLE );
+    define( "CONTENT_PROTECTOR_SHORTCODE", CONTENT_PROTECTOR_HANDLE );
+    define( "CONTENT_PROTECTOR_CAPTCHA_KEYWORD", "CAPTCHA" );
     // Default form field settings
-    define( "CONTENT_PROTECTOR_DEFAULT_FORM_INSTRUCTIONS", __( "This content is protected. Please enter the password to access it.", CONTENT_PROTECTOR_SLUG ) );
-    define( "CONTENT_PROTECTOR_DEFAULT_AJAX_LOADING_MESSAGE", __( "Checking Password...", CONTENT_PROTECTOR_SLUG ) );
-    define( "CONTENT_PROTECTOR_DEFAULT_ERROR_MESSAGE", __( "Incorrect password. Try again.", CONTENT_PROTECTOR_SLUG ) );
-    define( "CONTENT_PROTECTOR_DEFAULT_SUCCESS_MESSAGE", _x( "Authorized!", "Message when the correct password is entered", CONTENT_PROTECTOR_SLUG ) );
-    define( "CONTENT_PROTECTOR_DEFAULT_FORM_SUBMIT_LABEL", _x( "Submit", "Access form submit label", CONTENT_PROTECTOR_SLUG ) );
+    define( "CONTENT_PROTECTOR_DEFAULT_FORM_INSTRUCTIONS", __( "This content is protected. Please enter the password to access it.", "content-protector" ) );
+    define( "CONTENT_PROTECTOR_DEFAULT_AJAX_LOADING_MESSAGE", __( "Checking Password...", "content-protector" ) );
+    define( "CONTENT_PROTECTOR_DEFAULT_ERROR_MESSAGE", __( "Incorrect password. Try again.", "content-protector" ) );
+    define( "CONTENT_PROTECTOR_DEFAULT_SUCCESS_MESSAGE", _x( "Authorized!", "Message when the correct password is entered", "content-protector" ) );
+    define( "CONTENT_PROTECTOR_DEFAULT_FORM_SUBMIT_LABEL", _x( "Submit", "Access form submit label", "content-protector" ) );
     define( "CONTENT_PROTECTOR_DEFAULT_ENCRYPTION_ALGORITHM", "CRYPT_STD_DES" );
-    define( "CONTENT_PROTECTOR_DEFAULT_FONT_SIZE", "12" );
     define( "CONTENT_PROTECTOR_DEFAULT_SHARE_AUTH_DURATION", "3600" ); // One hour (in seconds)
-    define( "CONTENT_PROTECTOR_DEFAULT_FONT_WEIGHT", "400" );
+    define( "CONTENT_PROTECTOR_DEFAULT_FONT_SIZE_OPTION", "0" );  // Make sure default size used is from the stylesheet
+    define( "CONTENT_PROTECTOR_DEFAULT_FONT_WEIGHT", "400" );  // normal
+    define( "CONTENT_PROTECTOR_DEFAULT_CAPTCHA_INSTRUCTIONS", __( "Prove you are human.  Please enter the code below to access the content.", "content-protector" ) );
+    define( "CONTENT_PROTECTOR_DEFAULT_CAPTCHA_WIDTH", "120" );
+    define( "CONTENT_PROTECTOR_DEFAULT_CAPTCHA_HEIGHT", "40" );
+    define( "CONTENT_PROTECTOR_DEFAULT_CAPTCHA_TEXT_CHARS", "23456789bcdfghjkmnpqrstvwxyz" );
+    define( "CONTENT_PROTECTOR_DEFAULT_CAPTCHA_TEXT_HEIGHT_PCT", "0.75" );
+    define( "CONTENT_PROTECTOR_DEFAULT_CAPTCHA_TEXT_LENGTH", "6" );
+    define( "CONTENT_PROTECTOR_DEFAULT_CAPTCHA_TEXT_FONT", dirname( __FILE__ ) . '/res/monofont.ttf' );
+    define( "CONTENT_PROTECTOR_DEFAULT_CAPTCHA_BACKGROUND_COLOR", "#FFFFFF" );
+    define( "CONTENT_PROTECTOR_DEFAULT_CAPTCHA_TEXT_COLOR", "#142864" );
+    define( "CONTENT_PROTECTOR_DEFAULT_CAPTCHA_NOISE_COLOR", "#6478B4" );
     // Required for styling JQuery UI plugins
     define( "CONTENT_PROTECTOR_JQUERY_UI_CSS", CONTENT_PROTECTOR_PLUGIN_URL . "/css/jqueryui/1.10.3/themes/smoothness/jquery-ui.css" );
     define( "CONTENT_PROTECTOR_JQUERY_UI_TIMEPICKER_JS", CONTENT_PROTECTOR_PLUGIN_URL . "/js/jquery-ui-timepicker-0.3.3/jquery.ui.timepicker.js" );
@@ -46,6 +57,77 @@ if ( !class_exists("contentProtectorPlugin") ) {
 
 		function contentProtectorPlugin() {
 			//constructor
+        }
+
+        // Credit: http://bavotasan.com/2011/convert-hex-color-to-rgb-using-php/
+        function __hex2rgb( $hex ) {
+            $hex = str_replace( "#", "", $hex );
+
+            if( strlen( $hex ) == 3 ) {
+                $r = hexdec( substr( $hex, 0, 1 ).substr( $hex, 0, 1 ) );
+                $g = hexdec( substr( $hex, 1, 1 ).substr( $hex, 1, 1 ) );
+                $b = hexdec( substr( $hex, 2, 1 ).substr( $hex, 2, 1 ) );
+            } elseif( strlen( $hex ) == 6 ) {
+                $r = hexdec( substr( $hex, 0, 2 ) );
+                $g = hexdec( substr( $hex, 2, 2 ) );
+                $b = hexdec( substr( $hex, 4, 2 ) );
+            } else {  // Set to black
+                $r = 0;
+                $g = 0;
+                $b = 0;
+            }
+            $rgb = array( $r, $g, $b );
+            //return implode( ", ",  $rgb ); // returns the rgb values separated by commas
+            return $rgb; // returns an array with the rgb values
+        }
+
+        // Inspired by http://www.white-hat-web-design.co.uk/blog/php-captcha-security-images/
+        function __generateCaptchaDataUri( $password ) {
+            $width = get_option( CONTENT_PROTECTOR_HANDLE . '_captcha_width', CONTENT_PROTECTOR_DEFAULT_CAPTCHA_WIDTH );
+            $height = get_option( CONTENT_PROTECTOR_HANDLE . '_captcha_height', CONTENT_PROTECTOR_DEFAULT_CAPTCHA_HEIGHT );
+            $text_height = get_option( CONTENT_PROTECTOR_HANDLE . "_captcha_text_height", CONTENT_PROTECTOR_DEFAULT_CAPTCHA_TEXT_HEIGHT_PCT );
+            $angle_variance = get_option( CONTENT_PROTECTOR_HANDLE . "_captcha_text_angle_variance", "0" );
+
+            $b_color = $this->__hex2rgb( get_option( CONTENT_PROTECTOR_HANDLE . '_captcha_background_color', CONTENT_PROTECTOR_DEFAULT_CAPTCHA_BACKGROUND_COLOR ) );
+            $t_color = $this->__hex2rgb( get_option( CONTENT_PROTECTOR_HANDLE . '_captcha_text_color', CONTENT_PROTECTOR_DEFAULT_CAPTCHA_TEXT_COLOR ) );
+            $n_color = $this->__hex2rgb( get_option( CONTENT_PROTECTOR_HANDLE . '_captcha_noise_color', CONTENT_PROTECTOR_DEFAULT_CAPTCHA_NOISE_COLOR ) );
+
+            /* Font size will be {$text_height}% of the image height */
+            $font_size = $height * $text_height;
+
+            /* Image text angle will be a random integer in the range +/-{$angle_variance} degrees */
+            $angle = mt_rand( ( -1 * $angle_variance ), $angle_variance );
+
+            $image = @imagecreate( $width, $height ) or die( 'Cannot initialize new GD image stream' );
+
+            /* Set the colours */
+            $background_color = imagecolorallocate( $image, $b_color[0], $b_color[1], $b_color[2] );
+            $text_color = imagecolorallocate( $image, $t_color[0], $t_color[1], $t_color[2] );
+            $noise_color = imagecolorallocate( $image, $n_color[0], $n_color[1], $n_color[2] );
+
+            /* Generate random dots in background */
+            for(  $i=0; $i<( $width * $height ) / 3; $i++ ) {
+                imagefilledellipse( $image, mt_rand( 0, $width ), mt_rand( 0, $height ), 1, 1, $noise_color );
+            }
+
+            /* Generate random lines in background */
+            for(  $i=0; $i<( $width * $height ) / 150; $i++ ) {
+                imageline( $image, mt_rand( 0, $width ), mt_rand( 0, $height ), mt_rand( 0, $width ), mt_rand( 0, $height ), $noise_color );
+            }
+
+            /* Create textbox and add text */
+            $textbox = imagettfbbox( $font_size, $angle, CONTENT_PROTECTOR_DEFAULT_CAPTCHA_TEXT_FONT, $password ) or die( 'Error in imagettfbbox function' );
+            $x = ( $width - $textbox[4] ) / 2;
+            $y = ( $height - $textbox[5] ) / 2;
+            imagettftext( $image, $font_size, $angle, $x, $y, $text_color, CONTENT_PROTECTOR_DEFAULT_CAPTCHA_TEXT_FONT, $password ) or die( 'Error in imagettftext function' );
+
+             /* Convert to base64 */
+            ob_start(); //Start output buffer.
+            imagejpeg( $image ); //This will normally output the image, but because of ob_start(), it won't.
+            $contents = ob_get_contents(); //Instead, output above is saved to $contents
+            ob_end_clean(); //End the output buffer.
+
+            return "data:image/jpeg;base64," . base64_encode( $contents );
         }
 
         /**
@@ -89,7 +171,6 @@ if ( !class_exists("contentProtectorPlugin") ) {
             return $options_list;
         }
 
-
         /**
          * Generate a randomized salt for use in contentProtectorPlugin::__hashPassword()
          *
@@ -102,6 +183,19 @@ if ( !class_exists("contentProtectorPlugin") ) {
             for ( $i = 0; $i < $length; $i++ )
                 $salt .= substr( str_shuffle( $valid_chars ), mt_rand( 0, 63 ), 1 );
             return $salt;
+        }
+        /**
+         * Generate a randomized CAPTCHA code
+         *
+         * @param int $length   Length of the code requested
+         * @return string       The code
+         */
+        function __generateCaptchaCode( $length = 6 ) {
+            $valid_chars = get_option( CONTENT_PROTECTOR_HANDLE . '_captcha_text_chars', CONTENT_PROTECTOR_DEFAULT_CAPTCHA_TEXT_CHARS );
+            $code = "";
+            for ( $i = 0; $i < $length; $i++ )
+                $code .= substr( str_shuffle( $valid_chars ), mt_rand( 0, strlen( $valid_chars ) - 1 ), 1 );
+            return $code;
         }
 
         /**
@@ -166,18 +260,24 @@ if ( !class_exists("contentProtectorPlugin") ) {
                 else
                     $expires = time() + (int)$_POST['content-protector-expires'];
 
-                $cookie_name = CONTENT_PROTECTOR_COOKIE_ID . md5( $_POST['content-protector-ident'] . get_permalink( $the_post_id ) );
-                $cookie_val = md5( $_POST['content-protector-password'] . $_POST['content-protector-expires'] . $_POST['content-protector-ident'] . get_permalink( $the_post_id ) );
-                setcookie( $cookie_name, $cookie_val, $expires, COOKIEPATH, COOKIE_DOMAIN );
-                $share_auth = get_option( CONTENT_PROTECTOR_HANDLE . '_share_auth', array() );
-                if ( !empty( $share_auth ) ) {
-                    $share_auth_cookie_name = CONTENT_PROTECTOR_COOKIE_ID . "share_auth";
-                    if ( ( isset( $share_auth['same_identifier'] ) ) && ( $share_auth['same_identifier'] == "1" ) )
-                        $share_auth_cookie_name .= "_" . md5( $_POST['content-protector-ident'] );
-                    if ( ( isset( $share_auth['same_page'] ) ) && ( $share_auth['same_page'] == "1" ) )
-                        $share_auth_cookie_name .= "_" . md5( get_permalink( $the_post_id ) );
-                    $share_auth_cookie_expires = time() + get_option( CONTENT_PROTECTOR_HANDLE . '_share_auth_duration', CONTENT_PROTECTOR_DEFAULT_SHARE_AUTH_DURATION );
-                    setcookie( $share_auth_cookie_name, md5( $_POST['content-protector-password'] ), $share_auth_cookie_expires, COOKIEPATH, COOKIE_DOMAIN );
+                if ( ( isset( $_POST['content-protector-captcha'] ) ) && ( (int)$_POST['content-protector-captcha'] == 1 ) )  {
+                    $cookie_name = CONTENT_PROTECTOR_COOKIE_ID . md5( $_POST['content-protector-ident'] . get_permalink( $the_post_id ) . "_captcha" );
+                    $cookie_val = md5( $_POST['content-protector-expires'] . $_POST['content-protector-ident'] . get_permalink( $the_post_id ) );
+                    setcookie( $cookie_name, $cookie_val, $expires, COOKIEPATH, COOKIE_DOMAIN );
+                } else {
+                    $cookie_name = CONTENT_PROTECTOR_COOKIE_ID . md5( $_POST['content-protector-ident'] . get_permalink( $the_post_id ) );
+                    $cookie_val = md5( $_POST['content-protector-password'] . $_POST['content-protector-expires'] . $_POST['content-protector-ident'] . get_permalink( $the_post_id ) );
+                    setcookie( $cookie_name, $cookie_val, $expires, COOKIEPATH, COOKIE_DOMAIN );
+                    $share_auth = get_option( CONTENT_PROTECTOR_HANDLE . '_share_auth', array() );
+                    if ( !empty( $share_auth ) ) {
+                        $share_auth_cookie_name = CONTENT_PROTECTOR_COOKIE_ID . "share_auth";
+                        if ( ( isset( $share_auth['same_identifier'] ) ) && ( $share_auth['same_identifier'] == "1" ) )
+                            $share_auth_cookie_name .= "_" . md5( $_POST['content-protector-ident'] );
+                        if ( ( isset( $share_auth['same_page'] ) ) && ( $share_auth['same_page'] == "1" ) )
+                            $share_auth_cookie_name .= "_" . md5( get_permalink( $the_post_id ) );
+                        $share_auth_cookie_expires = time() + get_option( CONTENT_PROTECTOR_HANDLE . '_share_auth_duration', CONTENT_PROTECTOR_DEFAULT_SHARE_AUTH_DURATION );
+                        setcookie( $share_auth_cookie_name, md5( $_POST['content-protector-password'] ), $share_auth_cookie_expires, COOKIEPATH, COOKIE_DOMAIN );
+                    }
                 }
 
             }
@@ -194,19 +294,22 @@ if ( !class_exists("contentProtectorPlugin") ) {
             // Get the ID of the current post
             global $post; $post_id = $post->ID;
 
-            extract( shortcode_atts( array( 'password' => "", 'cookie_expires' => "", 'identifier' => "", 'ajax' => "false"  ), $atts ) );
+            extract( shortcode_atts( array( 'password' => "", 'cookie_expires' => "", 'identifier' => "", 'ajax' => "false" ), $atts ) );
 
             // Make sure $ajax is boolean and set to true ONLY if the string equals 'true'
             $ajax = ( $ajax === "true" ? true : false );
+
+            // If the password equals 'CAPTCHA' (upper- or lower-case), we'll set up a CAPTCHA
+            $captcha = ( strtoupper( $password ) === CONTENT_PROTECTOR_CAPTCHA_KEYWORD ? true : false );
 
             // Password empty; show error message to those who can edit this post, but fail silently
             // otherwise.  Never show protected content.
             if ( strlen( trim( $password ) ) == 0 )
                 if  ( current_user_can( "edit_post", $post_id ) )
                     return "<div class=\"content-protector-error\">"
-                    . "<p class=\"heading\">" . __( "Error", CONTENT_PROTECTOR_SLUG ) . "</p>"
-                    . "<p>" . sprintf( __( "No password set in this %s shortcode!", CONTENT_PROTECTOR_SLUG ), "<code>[" . CONTENT_PROTECTOR_SHORTCODE . "]</code>" ) . "</p>"
-                    . "<p><em>" . __( "Note: If you can see this message, it means you can edit the post and fix this error.", CONTENT_PROTECTOR_SLUG ) . "</em> :) </p>"
+                    . "<p class=\"heading\">" . __( "Error", "content-protector" ) . "</p>"
+                    . "<p>" . sprintf( _x( "No password set in this %s shortcode!", "%s refers to the Content Protector shortcode", "content-protector" ), "<code>[" . CONTENT_PROTECTOR_SHORTCODE . "]</code>" ) . "</p>"
+                    . "<p><em>" . __( "Note: If you can see this message, it means you can edit the post and fix this error.", "content-protector" ) . "</em> :) </p>"
                     . "</div>";
                 else
                     return "";
@@ -217,9 +320,9 @@ if ( !class_exists("contentProtectorPlugin") ) {
             if ( ( $ajax ) && ( strlen( trim( $identifier ) ) == 0 ) )
                 if ( current_user_can( "edit_post", $post_id ) )
                     return "<div class=\"content-protector-error\">"
-                    . "<p class=\"heading\">" . __( "Error", CONTENT_PROTECTOR_SLUG ) . "</p>"
-                    . "<p>" . sprintf( __( "No AJAX allowed in this %s shortcode unless an identifier is set!", CONTENT_PROTECTOR_SLUG ), "<code>[" . CONTENT_PROTECTOR_SHORTCODE . "]</code>" ) . "</p>"
-                    . "<p><em>" . __( "Note: If you can see this message, it means you can edit the post and fix this error.", CONTENT_PROTECTOR_SLUG ) . "</em> :) </p>"
+                    . "<p class=\"heading\">" . __( "Error", "content-protector" ) . "</p>"
+                    . "<p>" . sprintf( _x( "No AJAX allowed in this %s shortcode unless an identifier is set!", "%s refers to the Content Protector shortcode", "content-protector" ), "<code>[" . CONTENT_PROTECTOR_SHORTCODE . "]</code>" ) . "</p>"
+                    . "<p><em>" . __( "Note: If you can see this message, it means you can edit the post and fix this error.", "content-protector" ) . "</em> :) </p>"
                     . "</div>";
                 else
                     return "";
@@ -243,6 +346,7 @@ if ( !class_exists("contentProtectorPlugin") ) {
 
             $isAuthorized = false; $successMessage = "";
             $cookie_name = CONTENT_PROTECTOR_COOKIE_ID . md5( $ident . get_permalink( $post->ID ) );
+            $captcha_cookie_name = CONTENT_PROTECTOR_COOKIE_ID . md5( $ident . get_permalink( $post->ID ) . "_captcha" );
             $share_auth = get_option( CONTENT_PROTECTOR_HANDLE . '_share_auth', array() );
             $share_auth_cookie_name = CONTENT_PROTECTOR_COOKIE_ID . "share_auth";
             if ( !empty( $share_auth ) ) {
@@ -258,8 +362,12 @@ if ( !class_exists("contentProtectorPlugin") ) {
             // ...or authorization by individual cookie
             elseif ( ( isset( $_COOKIE[$cookie_name] ) ) && ( $_COOKIE[$cookie_name] == md5( $password . $cookie_expires . $ident . get_permalink( $post->ID ) ) ) )
                 $isAuthorized = true;
+            //  ...or authorization by CAPTCHA cookie
+            elseif ( ( $captcha ) && ( isset( $_COOKIE[$captcha_cookie_name] ) ) && ( $_COOKIE[$captcha_cookie_name] == md5( $cookie_expires . $ident . get_permalink( $post->ID ) ) ) )
+                $isAuthorized = true;
             // ...or authorization by $_POST
-            elseif ( ( ( isset( $_POST['content-protector-password'] ) ) && ( $_POST['content-protector-password'] === $password ) )
+            elseif ( ( ( isset( $_POST['content-protector-password'] ) ) && ( isset( $_POST['content-protector-token'] ) ) )
+                && ( crypt( $_POST['content-protector-password'], $_POST['content-protector-token'] ) == $_POST['content-protector-token'] )
                 && ( ( isset( $_POST['content-protector-ident'] ) ) && ( $_POST['content-protector-ident'] === $ident ) ) ) {
                 $isAuthorized = true;
                 // We only want to see this on initial authorization, not whenever the cookie authorizes you
@@ -273,6 +381,9 @@ if ( !class_exists("contentProtectorPlugin") ) {
             if ( $isAuthorized ) {
                 return "<div id=\"content-protector" . $identifier . "\" class=\"content-protector-access-form\">" . $successMessage . do_shortcode( $content ) . "</div>";
             } else {
+                // Generate random CAPTCHA code if we're setting up a CAPTCHA
+                if ( $captcha ) $password = $this->__generateCaptchaCode( get_option( CONTENT_PROTECTOR_HANDLE . "_captcha_text_length", CONTENT_PROTECTOR_DEFAULT_CAPTCHA_TEXT_LENGTH ) );
+                $captcha_instr_mode = get_option( CONTENT_PROTECTOR_HANDLE . "_captcha_instructions_display", "1" );
                 ob_start();
                 include("screens/access_form.php");
                 $the_form = ob_get_contents();
@@ -316,7 +427,11 @@ if ( !class_exists("contentProtectorPlugin") ) {
 
                             $cookie_expires = ( ( isset( $attributes['cookie_expires'] ) ) ? $attributes['cookie_expires'] : "" );
                             $identifier = ( ( isset( $attributes['identifier'] ) ) ? $attributes['identifier'] : "" );
-                            $password = ( ( isset( $attributes['password'] ) ) ? $attributes['password'] : "" );
+                            //$password = ( ( isset( $attributes['password'] ) ) ? $attributes['password'] : "" );
+
+                            // If the password equals 'CAPTCHA' (upper- or lower-case), we'll need to set up a new CAPTCHA if
+                            // the entered code is incorrect.
+                            $captcha = ( strtoupper( $attributes['password'] ) === CONTENT_PROTECTOR_CAPTCHA_KEYWORD ? true : false );
 
                             // We need to differentiate between multiple instances of protected content on a single
                             // Post/Page.  Since we ensured that $attributes['identifier'] is already set set, we'll use that.
@@ -327,7 +442,8 @@ if ( !class_exists("contentProtectorPlugin") ) {
                             $identifier = "-" . $attributes['identifier'];
 
                             if ( ( isset( $_POST['content-protector-ident'] ) ) && ( $_POST['content-protector-ident'] === $ident ) ) {
-                                if ( ( isset( $_POST['content-protector-password'] ) ) && ( $_POST['content-protector-password'] === $attributes['password'] ) ) {
+                            //    if ( ( isset( $_POST['content-protector-password'] ) ) && ( $_POST['content-protector-password'] === $attributes['password'] ) ) {
+                                if ( crypt( $_POST['content-protector-password'], $_POST['content-protector-token'] ) == $_POST['content-protector-token'] ) {
                                     // Right instance, right password.  Let's roll!
                                     if ( strlen( $cookie_expires ) > 0 )
                                         $this->setCookie();
@@ -344,6 +460,9 @@ if ( !class_exists("contentProtectorPlugin") ) {
                                     die();
                                 } else {
                                     $is_ajax_processed = true;
+                                    // Generate random CAPTCHA code if we're setting up a CAPTCHA
+                                    if ( $captcha ) $password = $this->__generateCaptchaCode( get_option( CONTENT_PROTECTOR_HANDLE . "_captcha_text_length", CONTENT_PROTECTOR_DEFAULT_CAPTCHA_TEXT_LENGTH ) );
+                                    $captcha_instr_mode = get_option( CONTENT_PROTECTOR_HANDLE . "_captcha_instructions_display", "1" );
                                     ob_start();
                                     include("screens/access_form.php");
                                     $the_form = ob_get_contents();
@@ -359,7 +478,10 @@ if ( !class_exists("contentProtectorPlugin") ) {
                     }
                 }
             }
-            $response = "<div id=\"content-protector-incorrect-password" . $identifier . "\" class=\"content-protector-incorrect-password\">Something has gone horribly wrong</div>";
+            $response = "<div id=\"content-protector-incorrect-password" . $identifier . "\" class=\"content-protector-incorrect-password\">"
+                /* translators: %1$s refers to the 'identifier' attribute; %2$s refers to the Content Protector shortcode. */
+                . __( 'Something has gone wrong.  Did you remember to set the %1$s attribute in your %2$s shortcode?', "<code>identifier</code>", "<code>[content_protector]</code>" )
+                . "</div>";
 
             // response output
             header( "Content-Type: text/plain" );
@@ -389,12 +511,12 @@ if ( !class_exists("contentProtectorPlugin") ) {
                 }
                 div.content-protector-correct-password {
                     <?php if ( false !== get_option( CONTENT_PROTECTOR_HANDLE . '_success_message_color' ) ) { ?>color: <?php echo get_option( CONTENT_PROTECTOR_HANDLE . '_success_message_color' ); ?>; <?php } ?>
-                    <?php if ( false !== get_option( CONTENT_PROTECTOR_HANDLE . '_success_message_font_size' ) ) { ?>font-size: <?php echo get_option( CONTENT_PROTECTOR_HANDLE . '_success_message_font_size' ); ?>px; <?php } ?>
+                    <?php if ( ( false !== get_option( CONTENT_PROTECTOR_HANDLE . '_success_message_font_size' ) ) && ( get_option( CONTENT_PROTECTOR_HANDLE . '_success_message_font_size' ) > 0 ) ) { ?>font-size: <?php echo get_option( CONTENT_PROTECTOR_HANDLE . '_success_message_font_size' ); ?>px; <?php } ?>
                     <?php if ( false !== get_option( CONTENT_PROTECTOR_HANDLE . '_success_message_font_weight' ) ) { ?>font-weight: <?php echo get_option( CONTENT_PROTECTOR_HANDLE . '_success_message_font_weight' ); ?>; <?php } ?>
                 }
                 div.content-protector-incorrect-password {
                     <?php if ( false !== get_option( CONTENT_PROTECTOR_HANDLE . '_error_message_color' ) ) { ?>color: <?php echo get_option( CONTENT_PROTECTOR_HANDLE . '_error_message_color' ); ?>; <?php } ?>
-                    <?php if ( false !== get_option( CONTENT_PROTECTOR_HANDLE . '_error_message_font_size' ) ) { ?>font-size: <?php echo get_option( CONTENT_PROTECTOR_HANDLE . '_error_message_font_size' ); ?>px; <?php } ?>
+                    <?php if ( ( false !== get_option( CONTENT_PROTECTOR_HANDLE . '_error_message_font_size' ) ) && ( get_option( CONTENT_PROTECTOR_HANDLE . '_error_message_font_size' ) > 0 ) ) { ?>font-size: <?php echo get_option( CONTENT_PROTECTOR_HANDLE . '_error_message_font_size' ); ?>px; <?php } ?>
                     <?php if ( false !== get_option( CONTENT_PROTECTOR_HANDLE . '_error_message_font_weight' ) ) { ?>font-weight: <?php echo get_option( CONTENT_PROTECTOR_HANDLE . '_error_message_font_weight' ); ?>; <?php } ?>
                 }
                 div.content-protector-ajaxLoading {
@@ -404,7 +526,7 @@ if ( !class_exists("contentProtectorPlugin") ) {
                 }
                 label.content-protector-form-instructions {
                     <?php if ( false !== get_option( CONTENT_PROTECTOR_HANDLE . '_form_instructions_color' ) ) { ?>color: <?php echo get_option( CONTENT_PROTECTOR_HANDLE . '_form_instructions_color' ); ?>; <?php } ?>
-                    <?php if ( false !== get_option( CONTENT_PROTECTOR_HANDLE . '_form_instructions_font_size' ) ) { ?>font-size: <?php echo get_option( CONTENT_PROTECTOR_HANDLE . '_form_instructions_font_size' ); ?>px; <?php } ?>
+                    <?php if ( ( false !== get_option( CONTENT_PROTECTOR_HANDLE . '_form_instructions_font_size' ) ) && ( get_option( CONTENT_PROTECTOR_HANDLE . '_form_instructions_font_size' ) > 0 ) ) { ?>font-size: <?php echo get_option( CONTENT_PROTECTOR_HANDLE . '_form_instructions_font_size' ); ?>px; <?php } ?>
                     <?php if ( false !== get_option( CONTENT_PROTECTOR_HANDLE . '_form_instructions_font_weight' ) ) { ?>font-weight: <?php echo get_option( CONTENT_PROTECTOR_HANDLE . '_form_instructions_font_weight' ); ?>; <?php } ?>
                 }
             </style>
@@ -421,8 +543,8 @@ if ( !class_exists("contentProtectorPlugin") ) {
             wp_localize_script( CONTENT_PROTECTOR_SLUG . '-ajax_js', 'contentProtectorAjax', array( 'ajaxurl' => admin_url( 'admin-ajax.php' ),
                     'loading_label' => get_option( CONTENT_PROTECTOR_HANDLE . '_ajax_loading_message', CONTENT_PROTECTOR_DEFAULT_AJAX_LOADING_MESSAGE ),
                     'loading_img' => CONTENT_PROTECTOR_PLUGIN_URL . '/img/wpspin.gif',
-                    'error_heading' => __( "Error", CONTENT_PROTECTOR_SLUG ),
-                    'error_desc' => __( "Something unexpected has happened along the way.  The specific details are below:", CONTENT_PROTECTOR_SLUG ) ) );
+                    'error_heading' => __( "Error", "content-protector" ),
+                    'error_desc' => __( "Something unexpected has happened along the way.  The specific details are below:", "content-protector" ) ) );
 		}
 
         /**
@@ -433,38 +555,45 @@ if ( !class_exists("contentProtectorPlugin") ) {
             wp_enqueue_style( CONTENT_PROTECTOR_SLUG . '-jquery-ui-css', CONTENT_PROTECTOR_JQUERY_UI_CSS, false, CONTENT_PROTECTOR_VERSION );
             wp_enqueue_style( 'wp-color-picker' );
 
-            $css_all_default = "/* " . __( "These styles will be applied to all Content Protector access forms.", CONTENT_PROTECTOR_SLUG ) . " */\n" .
+            $css_all_default = "/* " . __( "These styles will be applied to all Content Protector access forms.", "content-protector" ) . " */\n" .
                 "form.content-protector-access-form {\n" .
-                "\t/* " . __( "Style the entire form", CONTENT_PROTECTOR_SLUG ) . " */\n}\n" .
+                "\t/* " . __( "CSS styles for the entire form", "content-protector" ) . " */\n}\n" .
                 "label.content-protector-form-instructions {\n" .
-                "\t/* " . __( "Style the form instructions", CONTENT_PROTECTOR_SLUG ) . " */\n}\n" .
+                "\t/* " . __( "CSS styles for the form instructions", "content-protector" ) . " */\n}\n" .
                 "div.content-protector-correct-password {\n" .
-                "\t/* " . __( "Style the message when the correct password is entered", CONTENT_PROTECTOR_SLUG ) . " */\n}\n" .
+                "\t/* " . __( "CSS styles for the message when the correct password is entered", "content-protector" ) . " */\n}\n" .
                 "div.content-protector-incorrect-password {\n" .
-                "\t/* " . __( "Style the error message for an incorrect password", CONTENT_PROTECTOR_SLUG ) . " */\n}\n" .
+                "\t/* " . __( "CSS styles for the error message for an incorrect password", "content-protector" ) . " */\n}\n" .
                 "input.content-protector-form-submit {\n" .
-                "\t/* " . __( "Style the Submit button", CONTENT_PROTECTOR_SLUG ) . " */\n}\n" .
+                "\t/* " . __( "CSS styles for the Submit button", "content-protector" ) . " */\n}\n" .
+                "input.content-protector-captcha-img {\n" .
+                "\t/* " . __( "CSS styles for the CAPTCHA box", "content-protector" ) . " */\n}\n" .
                 "div.content-protector-ajaxLoading {\n" .
-                "\t/* " . __( "Style the AJAX loading message", CONTENT_PROTECTOR_SLUG ) . " */\n}\n";
-            $css_ident_default = "/* " . __( "These styles will be applied to the Content Protector access form whose identifier is &quot;{id}&quot;.", CONTENT_PROTECTOR_SLUG ) . " */\n" .
+                "\t/* " . __( "CSS styles for the AJAX loading message", "content-protector" ) . " */\n}\n";
+            $css_ident_default = "/* " . __( "These styles will be applied to the Content Protector access form whose identifier is &quot;{id}&quot;.", "content-protector" ) . " */\n" .
                 "#content-protector-access-form-{id} {\n" .
-                "\t/* " . __( "Style the entire form", CONTENT_PROTECTOR_SLUG ) . " */\n}\n" .
+                "\t/* " . __( "CSS styles for the entire form", "content-protector" ) . " */\n}\n" .
                 "#content-protector-form-instructions-{id} {\n" .
-                "\t/* " . __( "Style the form instructions", CONTENT_PROTECTOR_SLUG ) . " */\n}\n" .
+                "\t/* " . __( "CSS styles for the form instructions", "content-protector" ) . " */\n}\n" .
                 "#content-protector-correct-password-{id} {\n" .
-                "\t/* " . __( "Style the message when the correct password is entered", CONTENT_PROTECTOR_SLUG ) . " */\n}\n" .
+                "\t/* " . __( "CSS styles for the message when the correct password is entered", "content-protector" ) . " */\n}\n" .
                 "#content-protector-incorrect-password-{id} {\n" .
-                "\t/* " . __( "Style the error message for an incorrect password", CONTENT_PROTECTOR_SLUG ) . " */\n}\n" .
+                "\t/* " . __( "CSS styles for the error message for an incorrect password", "content-protector" ) . " */\n}\n" .
                 "#content-protector-form-submit-{id} {\n" .
-                "\t/* " . __( "Style the Submit button", CONTENT_PROTECTOR_SLUG ) . " */\n}\n" .
+                "\t/* " . __( "CSS styles for the Submit button", "content-protector" ) . " */\n}\n" .
+                "#content-protector-captcha-img-{id} {\n" .
+                "\t/* " . __( "CSS styles for the CAPTCHA box", "content-protector" ) . " */\n}\n" .
                 "#content-protector-ajaxLoading-{id} {\n" .
-                "\t/* " . __( "Style the AJAX loading message", CONTENT_PROTECTOR_SLUG ) . " */\n}\n";
+                "\t/* " . __( "CSS styles for the AJAX loading message", "content-protector" ) . " */\n}\n";
             $color_controls = array( "#" . CONTENT_PROTECTOR_HANDLE . "_border_color",
                 "#" . CONTENT_PROTECTOR_HANDLE . "_background_color",
                 "#" . CONTENT_PROTECTOR_HANDLE . "_form_instructions_color",
                 "#" . CONTENT_PROTECTOR_HANDLE . "_ajax_loading_message_color",
                 "#" . CONTENT_PROTECTOR_HANDLE . "_form_submit_label_color",
                 "#" . CONTENT_PROTECTOR_HANDLE . "_form_submit_button_color",
+                "#" . CONTENT_PROTECTOR_HANDLE . "_captcha_background_color",
+                "#" . CONTENT_PROTECTOR_HANDLE . "_captcha_text_color",
+                "#" . CONTENT_PROTECTOR_HANDLE . "_captcha_noise_color",
                 "#" . CONTENT_PROTECTOR_HANDLE . "_success_message_color",
                 "#" . CONTENT_PROTECTOR_HANDLE . "_error_message_color"
             );
@@ -484,9 +613,17 @@ if ( !class_exists("contentProtectorPlugin") ) {
                     'error_message_id' => '#' . CONTENT_PROTECTOR_HANDLE . '_error_message',
                     'form_submit_label_default' => CONTENT_PROTECTOR_DEFAULT_FORM_SUBMIT_LABEL,
                     'form_submit_label_id' => '#' . CONTENT_PROTECTOR_HANDLE . '_form_submit_label',
+                    'captcha_instructions_default' => CONTENT_PROTECTOR_DEFAULT_CAPTCHA_INSTRUCTIONS,
+                    'captcha_instructions_id' => '#' . CONTENT_PROTECTOR_HANDLE . '_captcha_instructions',
+                    'captcha_width_default' => CONTENT_PROTECTOR_DEFAULT_CAPTCHA_WIDTH,
+                    'captcha_width_id' => '#' . CONTENT_PROTECTOR_HANDLE . '_captcha_width',
+                    'captcha_height_default' => CONTENT_PROTECTOR_DEFAULT_CAPTCHA_HEIGHT,
+                    'captcha_height_id' => '#' . CONTENT_PROTECTOR_HANDLE . '_captcha_height',
+                    'captcha_text_chars_default' => CONTENT_PROTECTOR_DEFAULT_CAPTCHA_TEXT_CHARS,
+                    'captcha_text_chars_id' => '#' . CONTENT_PROTECTOR_HANDLE . '_captcha_text_chars',
                     'form_css_all_default' => $css_all_default,
                     'form_css_ident_default' => $css_ident_default,
-                    'form_css_ident_dialog' => __( "Enter the Content Protector identifier \nwhose form you want to customize:", CONTENT_PROTECTOR_SLUG ),
+                    'form_css_ident_dialog' => __( "Enter the Content Protector identifier \nwhose form you want to customize:", "content-protector" ),
                     'form_css_id' => '#' . CONTENT_PROTECTOR_HANDLE . '_form_css' ) );
         }
 
@@ -496,50 +633,50 @@ if ( !class_exists("contentProtectorPlugin") ) {
          */
         function initSettingsPage() {
 
-            $plugin_page = add_options_page( __( 'Content Protector', CONTENT_PROTECTOR_SLUG ), __( 'Content Protector', CONTENT_PROTECTOR_SLUG ), 'edit_posts', CONTENT_PROTECTOR_HANDLE, array( &$this, 'drawSettingsPage' ) );
+            $plugin_page = add_options_page( __( 'Content Protector', "content-protector" ), __( 'Content Protector', "content-protector" ), 'edit_posts', CONTENT_PROTECTOR_HANDLE, array( &$this, 'drawSettingsPage' ) );
             add_action( "admin_print_styles-" . $plugin_page, array( &$this, "addAdminHeaderCode" ) );
 
-            add_settings_section( CONTENT_PROTECTOR_HANDLE . '_general_settings_section', __( 'General Settings', CONTENT_PROTECTOR_SLUG ), array( &$this, '__generalSettingsSectionFieldCallback' ), CONTENT_PROTECTOR_HANDLE . '_general_settings_subpage' );
+            add_settings_section( CONTENT_PROTECTOR_HANDLE . '_general_settings_section', __( 'General Settings', "content-protector" ), array( &$this, '__generalSettingsSectionFieldCallback' ), CONTENT_PROTECTOR_HANDLE . '_general_settings_subpage' );
             // Add the fields for the General Settings section
-            add_settings_field( CONTENT_PROTECTOR_HANDLE . '_encryption_algorithm', __( 'Encryption Algorithm', CONTENT_PROTECTOR_SLUG ), array( &$this, '__encryptionAlgorithmFieldCallback' ), CONTENT_PROTECTOR_HANDLE . '_general_settings_subpage', CONTENT_PROTECTOR_HANDLE . '_general_settings_section' );
-            add_settings_field( CONTENT_PROTECTOR_HANDLE . '_share_auth', __( 'Shared Authorization', CONTENT_PROTECTOR_SLUG ), array( &$this, '__shareAuthFieldCallback' ), CONTENT_PROTECTOR_HANDLE . '_general_settings_subpage', CONTENT_PROTECTOR_HANDLE . '_general_settings_section' );
-            add_settings_field( CONTENT_PROTECTOR_HANDLE . '_share_auth_duration', __( 'Shared Authorization Cookie Duration', CONTENT_PROTECTOR_SLUG ), array( &$this, '__shareAuthDurationFieldCallback' ), CONTENT_PROTECTOR_HANDLE . '_general_settings_subpage', CONTENT_PROTECTOR_HANDLE . '_general_settings_section' );
+            add_settings_field( CONTENT_PROTECTOR_HANDLE . '_encryption_algorithm', __( 'Encryption Algorithm', "content-protector" ), array( &$this, '__encryptionAlgorithmFieldCallback' ), CONTENT_PROTECTOR_HANDLE . '_general_settings_subpage', CONTENT_PROTECTOR_HANDLE . '_general_settings_section' );
+            add_settings_field( CONTENT_PROTECTOR_HANDLE . '_share_auth', __( 'Shared Authorization', "content-protector" ), array( &$this, '__shareAuthFieldCallback' ), CONTENT_PROTECTOR_HANDLE . '_general_settings_subpage', CONTENT_PROTECTOR_HANDLE . '_general_settings_section' );
+            add_settings_field( CONTENT_PROTECTOR_HANDLE . '_share_auth_duration', __( 'Shared Authorization Cookie Duration', "content-protector" ), array( &$this, '__shareAuthDurationFieldCallback' ), CONTENT_PROTECTOR_HANDLE . '_general_settings_subpage', CONTENT_PROTECTOR_HANDLE . '_general_settings_section' );
             // Register our setting so that $_POST handling is done for us and our callback function just has to echo the HTML
             register_setting( CONTENT_PROTECTOR_HANDLE . '_general_settings_group', CONTENT_PROTECTOR_HANDLE . '_encryption_algorithm', 'esc_attr' );
             register_setting( CONTENT_PROTECTOR_HANDLE . '_general_settings_group', CONTENT_PROTECTOR_HANDLE . '_share_auth', '' );
             register_setting( CONTENT_PROTECTOR_HANDLE . '_general_settings_group', CONTENT_PROTECTOR_HANDLE . '_share_auth_duration', 'intval' );
 
-            add_settings_section( CONTENT_PROTECTOR_HANDLE . '_form_instructions_settings_section', __( 'Form Instructions Settings', CONTENT_PROTECTOR_SLUG ), array( &$this, '__formInstructionsSettingsSectionFieldCallback' ), CONTENT_PROTECTOR_HANDLE . '_form_instructions_settings_subpage' );
+            add_settings_section( CONTENT_PROTECTOR_HANDLE . '_form_instructions_settings_section', __( 'Form Instructions', "content-protector" ), array( &$this, '__formInstructionsSettingsSectionFieldCallback' ), CONTENT_PROTECTOR_HANDLE . '_form_instructions_settings_subpage' );
             // Add the fields for the Form Instructions Settings section
-            add_settings_field( CONTENT_PROTECTOR_HANDLE . '_form_instructions', __( 'Instructions Text', CONTENT_PROTECTOR_SLUG ), array( &$this, '__formInstructionsFieldCallback' ), CONTENT_PROTECTOR_HANDLE . '_form_instructions_settings_subpage', CONTENT_PROTECTOR_HANDLE . '_form_instructions_settings_section' );
-            add_settings_field( CONTENT_PROTECTOR_HANDLE . '_form_instructions_font_weight', __( 'Font Weight', CONTENT_PROTECTOR_SLUG ), array( &$this, '__formInstructionsFontWeightFieldCallback' ), CONTENT_PROTECTOR_HANDLE . '_form_instructions_settings_subpage', CONTENT_PROTECTOR_HANDLE . '_form_instructions_settings_section' );
-            add_settings_field( CONTENT_PROTECTOR_HANDLE . '_form_instructions_font_size', __( 'Font Size', CONTENT_PROTECTOR_SLUG ), array( &$this, '__formInstructionsFontSizeFieldCallback' ), CONTENT_PROTECTOR_HANDLE . '_form_instructions_settings_subpage', CONTENT_PROTECTOR_HANDLE . '_form_instructions_settings_section' );
-            add_settings_field( CONTENT_PROTECTOR_HANDLE . '_form_instructions_color', __( 'Text Color', CONTENT_PROTECTOR_SLUG ), array( &$this, '__formInstructionsColorFieldCallback' ), CONTENT_PROTECTOR_HANDLE . '_form_instructions_settings_subpage', CONTENT_PROTECTOR_HANDLE . '_form_instructions_settings_section' );
+            add_settings_field( CONTENT_PROTECTOR_HANDLE . '_form_instructions', __( 'Instructions Text', "content-protector" ), array( &$this, '__formInstructionsFieldCallback' ), CONTENT_PROTECTOR_HANDLE . '_form_instructions_settings_subpage', CONTENT_PROTECTOR_HANDLE . '_form_instructions_settings_section' );
+            add_settings_field( CONTENT_PROTECTOR_HANDLE . '_form_instructions_font_weight', __( 'Font Weight', "content-protector" ), array( &$this, '__formInstructionsFontWeightFieldCallback' ), CONTENT_PROTECTOR_HANDLE . '_form_instructions_settings_subpage', CONTENT_PROTECTOR_HANDLE . '_form_instructions_settings_section' );
+            add_settings_field( CONTENT_PROTECTOR_HANDLE . '_form_instructions_font_size', __( 'Font Size', "content-protector" ), array( &$this, '__formInstructionsFontSizeFieldCallback' ), CONTENT_PROTECTOR_HANDLE . '_form_instructions_settings_subpage', CONTENT_PROTECTOR_HANDLE . '_form_instructions_settings_section' );
+            add_settings_field( CONTENT_PROTECTOR_HANDLE . '_form_instructions_color', __( 'Text Color', "content-protector" ), array( &$this, '__formInstructionsColorFieldCallback' ), CONTENT_PROTECTOR_HANDLE . '_form_instructions_settings_subpage', CONTENT_PROTECTOR_HANDLE . '_form_instructions_settings_section' );
             // Register our setting so that $_POST handling is done for us and our callback function just has to echo the HTML
             register_setting( CONTENT_PROTECTOR_HANDLE . '_form_instructions_settings_group', CONTENT_PROTECTOR_HANDLE . '_form_instructions', 'esc_textarea' );
             register_setting( CONTENT_PROTECTOR_HANDLE . '_form_instructions_settings_group', CONTENT_PROTECTOR_HANDLE . '_form_instructions_font_weight', 'esc_attr' );
             register_setting( CONTENT_PROTECTOR_HANDLE . '_form_instructions_settings_group', CONTENT_PROTECTOR_HANDLE . '_form_instructions_font_size', 'esc_attr' );
             register_setting( CONTENT_PROTECTOR_HANDLE . '_form_instructions_settings_group', CONTENT_PROTECTOR_HANDLE . '_form_instructions_color', 'esc_attr' );
 
-            add_settings_section( CONTENT_PROTECTOR_HANDLE . '_ajax_loading_message_settings_section', __( 'AJAX Loading Message Settings', CONTENT_PROTECTOR_SLUG ), array( &$this, '__ajaxLoadingMessageSettingsSectionFieldCallback' ), CONTENT_PROTECTOR_HANDLE . '_ajax_loading_message_settings_subpage' );
+            add_settings_section( CONTENT_PROTECTOR_HANDLE . '_ajax_loading_message_settings_section', __( 'AJAX Loading Message', "content-protector" ), array( &$this, '__ajaxLoadingMessageSettingsSectionFieldCallback' ), CONTENT_PROTECTOR_HANDLE . '_ajax_loading_message_settings_subpage' );
             // Add the fields for the AJAX Loading Message Settings section
-            add_settings_field( CONTENT_PROTECTOR_HANDLE . '_ajax_loading_message', __( 'Message Text', CONTENT_PROTECTOR_SLUG ), array( &$this, '__ajaxLoadingMessageFieldCallback' ), CONTENT_PROTECTOR_HANDLE . '_ajax_loading_message_settings_subpage', CONTENT_PROTECTOR_HANDLE . '_ajax_loading_message_settings_section' );
-            add_settings_field( CONTENT_PROTECTOR_HANDLE . '_ajax_loading_message_font_weight', __( 'Font Weight', CONTENT_PROTECTOR_SLUG ), array( &$this, '__ajaxLoadingMessageFontWeightFieldCallback' ), CONTENT_PROTECTOR_HANDLE . '_ajax_loading_message_settings_subpage', CONTENT_PROTECTOR_HANDLE . '_ajax_loading_message_settings_section' );
-            add_settings_field( CONTENT_PROTECTOR_HANDLE . '_ajax_loading_message_font_style', __( 'Font Style', CONTENT_PROTECTOR_SLUG ), array( &$this, '__ajaxLoadingMessageFontStyleFieldCallback' ), CONTENT_PROTECTOR_HANDLE . '_ajax_loading_message_settings_subpage', CONTENT_PROTECTOR_HANDLE . '_ajax_loading_message_settings_section' );
-            add_settings_field( CONTENT_PROTECTOR_HANDLE . '_ajax_loading_message_color', __( 'Text Color', CONTENT_PROTECTOR_SLUG ), array( &$this, '__ajaxLoadingMessageColorFieldCallback' ), CONTENT_PROTECTOR_HANDLE . '_ajax_loading_message_settings_subpage', CONTENT_PROTECTOR_HANDLE . '_ajax_loading_message_settings_section' );
+            add_settings_field( CONTENT_PROTECTOR_HANDLE . '_ajax_loading_message', __( 'Message Text', "content-protector" ), array( &$this, '__ajaxLoadingMessageFieldCallback' ), CONTENT_PROTECTOR_HANDLE . '_ajax_loading_message_settings_subpage', CONTENT_PROTECTOR_HANDLE . '_ajax_loading_message_settings_section' );
+            add_settings_field( CONTENT_PROTECTOR_HANDLE . '_ajax_loading_message_font_weight', __( 'Font Weight', "content-protector" ), array( &$this, '__ajaxLoadingMessageFontWeightFieldCallback' ), CONTENT_PROTECTOR_HANDLE . '_ajax_loading_message_settings_subpage', CONTENT_PROTECTOR_HANDLE . '_ajax_loading_message_settings_section' );
+            add_settings_field( CONTENT_PROTECTOR_HANDLE . '_ajax_loading_message_font_style', __( 'Font Style', "content-protector" ), array( &$this, '__ajaxLoadingMessageFontStyleFieldCallback' ), CONTENT_PROTECTOR_HANDLE . '_ajax_loading_message_settings_subpage', CONTENT_PROTECTOR_HANDLE . '_ajax_loading_message_settings_section' );
+            add_settings_field( CONTENT_PROTECTOR_HANDLE . '_ajax_loading_message_color', __( 'Text Color', "content-protector" ), array( &$this, '__ajaxLoadingMessageColorFieldCallback' ), CONTENT_PROTECTOR_HANDLE . '_ajax_loading_message_settings_subpage', CONTENT_PROTECTOR_HANDLE . '_ajax_loading_message_settings_section' );
             // Register our setting so that $_POST handling is done for us and our callback function just has to echo the HTML
             register_setting( CONTENT_PROTECTOR_HANDLE . '_ajax_loading_message_settings_group', CONTENT_PROTECTOR_HANDLE . '_ajax_loading_message', 'esc_attr' );
             register_setting( CONTENT_PROTECTOR_HANDLE . '_ajax_loading_message_settings_group', CONTENT_PROTECTOR_HANDLE . '_ajax_loading_message_font_weight', 'esc_attr' );
             register_setting( CONTENT_PROTECTOR_HANDLE . '_ajax_loading_message_settings_group', CONTENT_PROTECTOR_HANDLE . '_ajax_loading_message_font_style', 'esc_attr' );
             register_setting( CONTENT_PROTECTOR_HANDLE . '_ajax_loading_message_settings_group', CONTENT_PROTECTOR_HANDLE . '_ajax_loading_message_color', 'esc_attr' );
 
-            add_settings_section( CONTENT_PROTECTOR_HANDLE . '_success_message_settings_section', __( 'Success Message Settings', CONTENT_PROTECTOR_SLUG ), array( &$this, '__successMessageSettingsSectionFieldCallback' ), CONTENT_PROTECTOR_HANDLE . '_success_message_settings_subpage' );
+            add_settings_section( CONTENT_PROTECTOR_HANDLE . '_success_message_settings_section', __( 'Success Message', "content-protector" ), array( &$this, '__successMessageSettingsSectionFieldCallback' ), CONTENT_PROTECTOR_HANDLE . '_success_message_settings_subpage' );
             // Add the fields for the Success Message Settings section
-            add_settings_field( CONTENT_PROTECTOR_HANDLE . '_success_message_display', __( 'Display Success Message', CONTENT_PROTECTOR_SLUG ), array( &$this, '__successMessageDisplayFieldCallback' ), CONTENT_PROTECTOR_HANDLE . '_success_message_settings_subpage', CONTENT_PROTECTOR_HANDLE . '_success_message_settings_section' );
-            add_settings_field( CONTENT_PROTECTOR_HANDLE . '_success_message', __( 'Message Text', CONTENT_PROTECTOR_SLUG ), array( &$this, '__successMessageFieldCallback' ), CONTENT_PROTECTOR_HANDLE . '_success_message_settings_subpage', CONTENT_PROTECTOR_HANDLE . '_success_message_settings_section' );
-            add_settings_field( CONTENT_PROTECTOR_HANDLE . '_success_message_font_weight', __( 'Font Weight', CONTENT_PROTECTOR_SLUG ), array( &$this, '__successMessageFontWeightFieldCallback' ), CONTENT_PROTECTOR_HANDLE . '_success_message_settings_subpage', CONTENT_PROTECTOR_HANDLE . '_success_message_settings_section' );
-            add_settings_field( CONTENT_PROTECTOR_HANDLE . '_success_message_font_size', __( 'Font Size', CONTENT_PROTECTOR_SLUG ), array( &$this, '__successMessageFontSizeFieldCallback' ), CONTENT_PROTECTOR_HANDLE . '_success_message_settings_subpage', CONTENT_PROTECTOR_HANDLE . '_success_message_settings_section' );
-            add_settings_field( CONTENT_PROTECTOR_HANDLE . '_success_message_color', __( 'Text Color', CONTENT_PROTECTOR_SLUG ), array( &$this, '__successMessageColorFieldCallback' ), CONTENT_PROTECTOR_HANDLE . '_success_message_settings_subpage', CONTENT_PROTECTOR_HANDLE . '_success_message_settings_section' );
+            add_settings_field( CONTENT_PROTECTOR_HANDLE . '_success_message_display', __( 'Display Success Message', "content-protector" ), array( &$this, '__successMessageDisplayFieldCallback' ), CONTENT_PROTECTOR_HANDLE . '_success_message_settings_subpage', CONTENT_PROTECTOR_HANDLE . '_success_message_settings_section' );
+            add_settings_field( CONTENT_PROTECTOR_HANDLE . '_success_message', __( 'Message Text', "content-protector" ), array( &$this, '__successMessageFieldCallback' ), CONTENT_PROTECTOR_HANDLE . '_success_message_settings_subpage', CONTENT_PROTECTOR_HANDLE . '_success_message_settings_section' );
+            add_settings_field( CONTENT_PROTECTOR_HANDLE . '_success_message_font_weight', __( 'Font Weight', "content-protector" ), array( &$this, '__successMessageFontWeightFieldCallback' ), CONTENT_PROTECTOR_HANDLE . '_success_message_settings_subpage', CONTENT_PROTECTOR_HANDLE . '_success_message_settings_section' );
+            add_settings_field( CONTENT_PROTECTOR_HANDLE . '_success_message_font_size', __( 'Font Size', "content-protector" ), array( &$this, '__successMessageFontSizeFieldCallback' ), CONTENT_PROTECTOR_HANDLE . '_success_message_settings_subpage', CONTENT_PROTECTOR_HANDLE . '_success_message_settings_section' );
+            add_settings_field( CONTENT_PROTECTOR_HANDLE . '_success_message_color', __( 'Text Color', "content-protector" ), array( &$this, '__successMessageColorFieldCallback' ), CONTENT_PROTECTOR_HANDLE . '_success_message_settings_subpage', CONTENT_PROTECTOR_HANDLE . '_success_message_settings_section' );
             // Register our setting so that $_POST handling is done for us and our callback function just has to echo the HTML
             register_setting( CONTENT_PROTECTOR_HANDLE . '_success_message_settings_group', CONTENT_PROTECTOR_HANDLE . '_success_message_display', '' );
             register_setting( CONTENT_PROTECTOR_HANDLE . '_success_message_settings_group', CONTENT_PROTECTOR_HANDLE . '_success_message', 'esc_attr' );
@@ -547,37 +684,63 @@ if ( !class_exists("contentProtectorPlugin") ) {
             register_setting( CONTENT_PROTECTOR_HANDLE . '_success_message_settings_group', CONTENT_PROTECTOR_HANDLE . '_success_message_font_size', 'esc_attr' );
             register_setting( CONTENT_PROTECTOR_HANDLE . '_success_message_settings_group', CONTENT_PROTECTOR_HANDLE . '_success_message_color', 'esc_attr' );
 
-            add_settings_section( CONTENT_PROTECTOR_HANDLE . '_error_message_settings_section', __( 'Error Message Settings', CONTENT_PROTECTOR_SLUG ), array( &$this, '__errorMessageSettingsSectionFieldCallback' ), CONTENT_PROTECTOR_HANDLE . '_error_message_settings_subpage' );
+            add_settings_section( CONTENT_PROTECTOR_HANDLE . '_error_message_settings_section', __( 'Error Message', "content-protector" ), array( &$this, '__errorMessageSettingsSectionFieldCallback' ), CONTENT_PROTECTOR_HANDLE . '_error_message_settings_subpage' );
             // Add the fields for the Error Message Settings section
-            add_settings_field( CONTENT_PROTECTOR_HANDLE . '_error_message', __( 'Message Text', CONTENT_PROTECTOR_SLUG ), array( &$this, '__errorMessageFieldCallback' ), CONTENT_PROTECTOR_HANDLE . '_error_message_settings_subpage', CONTENT_PROTECTOR_HANDLE . '_error_message_settings_section' );
-            add_settings_field( CONTENT_PROTECTOR_HANDLE . '_error_message_font_weight', __( 'Font Weight', CONTENT_PROTECTOR_SLUG ), array( &$this, '__errorMessageFontWeightFieldCallback' ), CONTENT_PROTECTOR_HANDLE . '_error_message_settings_subpage', CONTENT_PROTECTOR_HANDLE . '_error_message_settings_section' );
-            add_settings_field( CONTENT_PROTECTOR_HANDLE . '_error_message_font_size', __( 'Font Size', CONTENT_PROTECTOR_SLUG ), array( &$this, '__errorMessageFontSizeFieldCallback' ), CONTENT_PROTECTOR_HANDLE . '_error_message_settings_subpage', CONTENT_PROTECTOR_HANDLE . '_error_message_settings_section' );
-            add_settings_field( CONTENT_PROTECTOR_HANDLE . '_error_message_color', __( 'Text Color', CONTENT_PROTECTOR_SLUG ), array( &$this, '__errorMessageColorFieldCallback' ), CONTENT_PROTECTOR_HANDLE . '_error_message_settings_subpage', CONTENT_PROTECTOR_HANDLE . '_error_message_settings_section' );
+            add_settings_field( CONTENT_PROTECTOR_HANDLE . '_error_message', __( 'Message Text', "content-protector" ), array( &$this, '__errorMessageFieldCallback' ), CONTENT_PROTECTOR_HANDLE . '_error_message_settings_subpage', CONTENT_PROTECTOR_HANDLE . '_error_message_settings_section' );
+            add_settings_field( CONTENT_PROTECTOR_HANDLE . '_error_message_font_weight', __( 'Font Weight', "content-protector" ), array( &$this, '__errorMessageFontWeightFieldCallback' ), CONTENT_PROTECTOR_HANDLE . '_error_message_settings_subpage', CONTENT_PROTECTOR_HANDLE . '_error_message_settings_section' );
+            add_settings_field( CONTENT_PROTECTOR_HANDLE . '_error_message_font_size', __( 'Font Size', "content-protector" ), array( &$this, '__errorMessageFontSizeFieldCallback' ), CONTENT_PROTECTOR_HANDLE . '_error_message_settings_subpage', CONTENT_PROTECTOR_HANDLE . '_error_message_settings_section' );
+            add_settings_field( CONTENT_PROTECTOR_HANDLE . '_error_message_color', __( 'Text Color', "content-protector" ), array( &$this, '__errorMessageColorFieldCallback' ), CONTENT_PROTECTOR_HANDLE . '_error_message_settings_subpage', CONTENT_PROTECTOR_HANDLE . '_error_message_settings_section' );
             // Register our setting so that $_POST handling is done for us and our callback function just has to echo the HTML
             register_setting( CONTENT_PROTECTOR_HANDLE . '_error_message_settings_group', CONTENT_PROTECTOR_HANDLE . '_error_message', 'esc_attr' );
             register_setting( CONTENT_PROTECTOR_HANDLE . '_error_message_settings_group', CONTENT_PROTECTOR_HANDLE . '_error_message_font_weight', 'esc_attr' );
             register_setting( CONTENT_PROTECTOR_HANDLE . '_error_message_settings_group', CONTENT_PROTECTOR_HANDLE . '_error_message_font_size', 'esc_attr' );
             register_setting( CONTENT_PROTECTOR_HANDLE . '_error_message_settings_group', CONTENT_PROTECTOR_HANDLE . '_error_message_color', 'esc_attr' );
 
-            add_settings_section( CONTENT_PROTECTOR_HANDLE . '_form_submit_label_settings_section', __( 'Form Submit Button Settings', CONTENT_PROTECTOR_SLUG ), array( &$this, '__formSubmitLabelSettingsSectionFieldCallback' ), CONTENT_PROTECTOR_HANDLE . '_form_submit_label_settings_subpage' );
+            add_settings_section( CONTENT_PROTECTOR_HANDLE . '_form_submit_label_settings_section', __( 'Form Submit Button', "content-protector" ), array( &$this, '__formSubmitLabelSettingsSectionFieldCallback' ), CONTENT_PROTECTOR_HANDLE . '_form_submit_label_settings_subpage' );
             // Add the fields for the Form Submit Button Settings section
-            add_settings_field( CONTENT_PROTECTOR_HANDLE . '_form_submit_label', __( 'Label Text', CONTENT_PROTECTOR_SLUG ), array( &$this, '__formSubmitLabelFieldCallback' ), CONTENT_PROTECTOR_HANDLE . '_form_submit_label_settings_subpage', CONTENT_PROTECTOR_HANDLE . '_form_submit_label_settings_section' );
-            add_settings_field( CONTENT_PROTECTOR_HANDLE . '_form_submit_label_color', __( 'Text Color', CONTENT_PROTECTOR_SLUG ), array( &$this, '__formSubmitLabelColorFieldCallback' ), CONTENT_PROTECTOR_HANDLE . '_form_submit_label_settings_subpage', CONTENT_PROTECTOR_HANDLE . '_form_submit_label_settings_section' );
-            add_settings_field( CONTENT_PROTECTOR_HANDLE . '_form_submit_button_color', __( 'Button Color', CONTENT_PROTECTOR_SLUG ), array( &$this, '__formSubmitButtonColorFieldCallback' ), CONTENT_PROTECTOR_HANDLE . '_form_submit_label_settings_subpage', CONTENT_PROTECTOR_HANDLE . '_form_submit_label_settings_section' );
+            add_settings_field( CONTENT_PROTECTOR_HANDLE . '_form_submit_label', __( 'Label Text', "content-protector" ), array( &$this, '__formSubmitLabelFieldCallback' ), CONTENT_PROTECTOR_HANDLE . '_form_submit_label_settings_subpage', CONTENT_PROTECTOR_HANDLE . '_form_submit_label_settings_section' );
+            add_settings_field( CONTENT_PROTECTOR_HANDLE . '_form_submit_label_color', __( 'Text Color', "content-protector" ), array( &$this, '__formSubmitLabelColorFieldCallback' ), CONTENT_PROTECTOR_HANDLE . '_form_submit_label_settings_subpage', CONTENT_PROTECTOR_HANDLE . '_form_submit_label_settings_section' );
+            add_settings_field( CONTENT_PROTECTOR_HANDLE . '_form_submit_button_color', __( 'Button Color', "content-protector" ), array( &$this, '__formSubmitButtonColorFieldCallback' ), CONTENT_PROTECTOR_HANDLE . '_form_submit_label_settings_subpage', CONTENT_PROTECTOR_HANDLE . '_form_submit_label_settings_section' );
             // Register our setting so that $_POST handling is done for us and our callback function just has to echo the HTML
             register_setting( CONTENT_PROTECTOR_HANDLE . '_form_submit_label_settings_group', CONTENT_PROTECTOR_HANDLE . '_form_submit_label', 'esc_attr' );
             register_setting( CONTENT_PROTECTOR_HANDLE . '_form_submit_label_settings_group', CONTENT_PROTECTOR_HANDLE . '_form_submit_label_color', 'esc_attr' );
             register_setting( CONTENT_PROTECTOR_HANDLE . '_form_submit_label_settings_group', CONTENT_PROTECTOR_HANDLE . '_form_submit_button_color', 'esc_attr' );
 
-            add_settings_section( CONTENT_PROTECTOR_HANDLE . '_form_css_settings_section', __( 'Form CSS Settings', CONTENT_PROTECTOR_SLUG ), array( &$this, '__formCSSSettingsSectionFieldCallback' ), CONTENT_PROTECTOR_HANDLE . '_form_css_settings_subpage' );
+            add_settings_section( CONTENT_PROTECTOR_HANDLE . '_captcha_settings_section', __( 'CAPTCHA', "content-protector" ), array( &$this, '__captchaSettingsSectionFieldCallback' ), CONTENT_PROTECTOR_HANDLE . '_captcha_settings_subpage' );
+            // Add the fields for the Form Submit Button Settings section
+            add_settings_field( CONTENT_PROTECTOR_HANDLE . '_captcha_instructions', __( 'CAPTCHA Instructions Text', "content-protector" ), array( &$this, '__captchaInstructionsFieldCallback' ), CONTENT_PROTECTOR_HANDLE . '_captcha_settings_subpage', CONTENT_PROTECTOR_HANDLE . '_captcha_settings_section' );
+            add_settings_field( CONTENT_PROTECTOR_HANDLE . '_captcha_instructions_display', __( 'CAPTCHA Instructions Display Mode', "content-protector" ), array( &$this, '__captchaInstructionsDisplayFieldCallback' ), CONTENT_PROTECTOR_HANDLE . '_captcha_settings_subpage', CONTENT_PROTECTOR_HANDLE . '_captcha_settings_section' );
+            add_settings_field( CONTENT_PROTECTOR_HANDLE . '_captcha_width', __( 'Image Width', "content-protector" ), array( &$this, '__captchaWidthFieldCallback' ), CONTENT_PROTECTOR_HANDLE . '_captcha_settings_subpage', CONTENT_PROTECTOR_HANDLE . '_captcha_settings_section' );
+            add_settings_field( CONTENT_PROTECTOR_HANDLE . '_captcha_height', __( 'Image Height', "content-protector" ), array( &$this, '__captchaHeightFieldCallback' ), CONTENT_PROTECTOR_HANDLE . '_captcha_settings_subpage', CONTENT_PROTECTOR_HANDLE . '_captcha_settings_section' );
+            add_settings_field( CONTENT_PROTECTOR_HANDLE . '_captcha_text_chars', __( 'Image Text Characters', "content-protector" ), array( &$this, '__captchaTextCharsFieldCallback' ), CONTENT_PROTECTOR_HANDLE . '_captcha_settings_subpage', CONTENT_PROTECTOR_HANDLE . '_captcha_settings_section' );
+            add_settings_field( CONTENT_PROTECTOR_HANDLE . '_captcha_text_length', __( 'Image Text Length', "content-protector" ), array( &$this, '__captchaTextLengthFieldCallback' ), CONTENT_PROTECTOR_HANDLE . '_captcha_settings_subpage', CONTENT_PROTECTOR_HANDLE . '_captcha_settings_section' );
+            add_settings_field( CONTENT_PROTECTOR_HANDLE . '_captcha_text_height', __( 'Image Text Height', "content-protector" ), array( &$this, '__captchaTextHeightFieldCallback' ), CONTENT_PROTECTOR_HANDLE . '_captcha_settings_subpage', CONTENT_PROTECTOR_HANDLE . '_captcha_settings_section' );
+            add_settings_field( CONTENT_PROTECTOR_HANDLE . '_captcha_text_angle_variance', __( 'Image Text Angle Variance', "content-protector" ), array( &$this, '__captchaTextAngleVarianceFieldCallback' ), CONTENT_PROTECTOR_HANDLE . '_captcha_settings_subpage', CONTENT_PROTECTOR_HANDLE . '_captcha_settings_section' );
+            add_settings_field( CONTENT_PROTECTOR_HANDLE . '_captcha_background_color', __( 'Image Background Color', "content-protector" ), array( &$this, '__captchaBackgroundColorFieldCallback' ), CONTENT_PROTECTOR_HANDLE . '_captcha_settings_subpage', CONTENT_PROTECTOR_HANDLE . '_captcha_settings_section' );
+            add_settings_field( CONTENT_PROTECTOR_HANDLE . '_captcha_text_color', __( 'Image Text Color', "content-protector" ), array( &$this, '__captchaTextColorFieldCallback' ), CONTENT_PROTECTOR_HANDLE . '_captcha_settings_subpage', CONTENT_PROTECTOR_HANDLE . '_captcha_settings_section' );
+            add_settings_field( CONTENT_PROTECTOR_HANDLE . '_captcha_noise_color', __( 'Image Noise Color', "content-protector" ), array( &$this, '__captchaNoiseColorFieldCallback' ), CONTENT_PROTECTOR_HANDLE . '_captcha_settings_subpage', CONTENT_PROTECTOR_HANDLE . '_captcha_settings_section' );
+            // Register our setting so that $_POST handling is done for us and our callback function just has to echo the HTML
+            register_setting( CONTENT_PROTECTOR_HANDLE . '_captcha_settings_group', CONTENT_PROTECTOR_HANDLE . '_captcha_instructions', 'esc_textarea' );
+            register_setting( CONTENT_PROTECTOR_HANDLE . '_captcha_settings_group', CONTENT_PROTECTOR_HANDLE . '_captcha_instructions_display', 'intval' );
+            register_setting( CONTENT_PROTECTOR_HANDLE . '_captcha_settings_group', CONTENT_PROTECTOR_HANDLE . '_captcha_width', 'intval' );
+            register_setting( CONTENT_PROTECTOR_HANDLE . '_captcha_settings_group', CONTENT_PROTECTOR_HANDLE . '_captcha_height', 'intval' );
+            register_setting( CONTENT_PROTECTOR_HANDLE . '_captcha_settings_group', CONTENT_PROTECTOR_HANDLE . '_captcha_text_chars', 'esc_attr' );
+            register_setting( CONTENT_PROTECTOR_HANDLE . '_captcha_settings_group', CONTENT_PROTECTOR_HANDLE . '_captcha_text_length', 'intval' );
+            register_setting( CONTENT_PROTECTOR_HANDLE . '_captcha_settings_group', CONTENT_PROTECTOR_HANDLE . '_captcha_text_height', 'floatval' );
+            register_setting( CONTENT_PROTECTOR_HANDLE . '_captcha_settings_group', CONTENT_PROTECTOR_HANDLE . '_captcha_text_angle_variance', 'intval' );
+            register_setting( CONTENT_PROTECTOR_HANDLE . '_captcha_settings_group', CONTENT_PROTECTOR_HANDLE . '_captcha_background_color', 'esc_attr' );
+            register_setting( CONTENT_PROTECTOR_HANDLE . '_captcha_settings_group', CONTENT_PROTECTOR_HANDLE . '_captcha_text_color', 'esc_attr' );
+            register_setting( CONTENT_PROTECTOR_HANDLE . '_captcha_settings_group', CONTENT_PROTECTOR_HANDLE . '_captcha_noise_color', 'esc_attr' );
+
+            add_settings_section( CONTENT_PROTECTOR_HANDLE . '_form_css_settings_section', __( 'Form CSS', "content-protector" ), array( &$this, '__formCSSSettingsSectionFieldCallback' ), CONTENT_PROTECTOR_HANDLE . '_form_css_settings_subpage' );
             // Add the fields for the Form CSS Settings section
-            add_settings_field( CONTENT_PROTECTOR_HANDLE . '_border_style', __( 'Border Style', CONTENT_PROTECTOR_SLUG ), array( &$this, '__formBorderStyleFieldCallback' ), CONTENT_PROTECTOR_HANDLE . '_form_css_settings_subpage', CONTENT_PROTECTOR_HANDLE . '_form_css_settings_section' );
-            add_settings_field( CONTENT_PROTECTOR_HANDLE . '_border_color', __( 'Border Color', CONTENT_PROTECTOR_SLUG ), array( &$this, '__formBorderColorFieldCallback' ), CONTENT_PROTECTOR_HANDLE . '_form_css_settings_subpage', CONTENT_PROTECTOR_HANDLE . '_form_css_settings_section' );
-            add_settings_field( CONTENT_PROTECTOR_HANDLE . '_border_width', __( 'Border Width', CONTENT_PROTECTOR_SLUG ), array( &$this, '__formBorderWidthFieldCallback' ), CONTENT_PROTECTOR_HANDLE . '_form_css_settings_subpage', CONTENT_PROTECTOR_HANDLE . '_form_css_settings_section' );
-            add_settings_field( CONTENT_PROTECTOR_HANDLE . '_border_radius', __( 'Border Radius', CONTENT_PROTECTOR_SLUG ), array( &$this, '__formBorderRadiusFieldCallback' ), CONTENT_PROTECTOR_HANDLE . '_form_css_settings_subpage', CONTENT_PROTECTOR_HANDLE . '_form_css_settings_section' );
-            add_settings_field( CONTENT_PROTECTOR_HANDLE . '_padding', __( 'Padding', CONTENT_PROTECTOR_SLUG ), array( &$this, '__formPaddingFieldCallback' ), CONTENT_PROTECTOR_HANDLE . '_form_css_settings_subpage', CONTENT_PROTECTOR_HANDLE . '_form_css_settings_section' );
-            add_settings_field( CONTENT_PROTECTOR_HANDLE . '_background_color', __( 'Background Color', CONTENT_PROTECTOR_SLUG ), array( &$this, '__formBackgroundColorFieldCallback' ), CONTENT_PROTECTOR_HANDLE . '_form_css_settings_subpage', CONTENT_PROTECTOR_HANDLE . '_form_css_settings_section' );
-            add_settings_field( CONTENT_PROTECTOR_HANDLE . '_form_css', __( 'Additional CSS', CONTENT_PROTECTOR_SLUG ), array( &$this, '__formCSSFieldCallback' ), CONTENT_PROTECTOR_HANDLE . '_form_css_settings_subpage', CONTENT_PROTECTOR_HANDLE . '_form_css_settings_section' );
+            add_settings_field( CONTENT_PROTECTOR_HANDLE . '_border_style', __( 'Border Style', "content-protector" ), array( &$this, '__formBorderStyleFieldCallback' ), CONTENT_PROTECTOR_HANDLE . '_form_css_settings_subpage', CONTENT_PROTECTOR_HANDLE . '_form_css_settings_section' );
+            add_settings_field( CONTENT_PROTECTOR_HANDLE . '_border_color', __( 'Border Color', "content-protector" ), array( &$this, '__formBorderColorFieldCallback' ), CONTENT_PROTECTOR_HANDLE . '_form_css_settings_subpage', CONTENT_PROTECTOR_HANDLE . '_form_css_settings_section' );
+            add_settings_field( CONTENT_PROTECTOR_HANDLE . '_border_width', __( 'Border Width', "content-protector" ), array( &$this, '__formBorderWidthFieldCallback' ), CONTENT_PROTECTOR_HANDLE . '_form_css_settings_subpage', CONTENT_PROTECTOR_HANDLE . '_form_css_settings_section' );
+            add_settings_field( CONTENT_PROTECTOR_HANDLE . '_border_radius', __( 'Border Radius', "content-protector" ), array( &$this, '__formBorderRadiusFieldCallback' ), CONTENT_PROTECTOR_HANDLE . '_form_css_settings_subpage', CONTENT_PROTECTOR_HANDLE . '_form_css_settings_section' );
+            add_settings_field( CONTENT_PROTECTOR_HANDLE . '_padding', __( 'Padding', "content-protector" ), array( &$this, '__formPaddingFieldCallback' ), CONTENT_PROTECTOR_HANDLE . '_form_css_settings_subpage', CONTENT_PROTECTOR_HANDLE . '_form_css_settings_section' );
+            add_settings_field( CONTENT_PROTECTOR_HANDLE . '_background_color', __( 'Background Color', "content-protector" ), array( &$this, '__formBackgroundColorFieldCallback' ), CONTENT_PROTECTOR_HANDLE . '_form_css_settings_subpage', CONTENT_PROTECTOR_HANDLE . '_form_css_settings_section' );
+            add_settings_field( CONTENT_PROTECTOR_HANDLE . '_form_css', __( 'Additional CSS', "content-protector" ), array( &$this, '__formCSSFieldCallback' ), CONTENT_PROTECTOR_HANDLE . '_form_css_settings_subpage', CONTENT_PROTECTOR_HANDLE . '_form_css_settings_section' );
             // Register our setting so that $_POST handling is done for us and our callback function just has to echo the HTML
             register_setting( CONTENT_PROTECTOR_HANDLE . '_form_css_settings_group', CONTENT_PROTECTOR_HANDLE . '_border_style', 'esc_attr' );
             register_setting( CONTENT_PROTECTOR_HANDLE . '_form_css_settings_group', CONTENT_PROTECTOR_HANDLE . '_border_color', 'esc_attr' );
@@ -589,27 +752,29 @@ if ( !class_exists("contentProtectorPlugin") ) {
         }
 
         function __formInstructionsSettingsSectionFieldCallback() {
-            _e("Customize the form instructions on the access forms.", CONTENT_PROTECTOR_SLUG );
+            _e("Customize the form instructions on the access forms.", "content-protector" );
         }
 
         function __formInstructionsFieldCallback() {
             echo '<textarea style="vertical-align: top;" rows="4" cols="70" class="regular-text" name="' . CONTENT_PROTECTOR_HANDLE . '_form_instructions' . '" id="' . CONTENT_PROTECTOR_HANDLE . '_form_instructions' . '">' . get_option( CONTENT_PROTECTOR_HANDLE . '_form_instructions', CONTENT_PROTECTOR_DEFAULT_FORM_INSTRUCTIONS ) . '</textarea>';
-            echo "&nbsp;<a href=\"javascript:;\" id=\"form-instructions-reset\">" . __( "Reset To Default", CONTENT_PROTECTOR_SLUG ) . "</a>";
+            echo "&nbsp;<a href=\"javascript:;\" id=\"form-instructions-reset\">" . __( "Reset To Default", "content-protector" ) . "</a>";
             echo "<div style=\"clear: both;\"></div>";
-            echo __( "Instructions for your access form.", CONTENT_PROTECTOR_SLUG );
-            echo "<br /><em>" . sprintf( __( "You can manually style this on all access forms using the %s CSS class.", CONTENT_PROTECTOR_SLUG ), "</em><code>label.content-protector-form-instructions</code><em>" ) . "</em>";
+            echo __( "Instructions for your access form.", "content-protector" );
+            /* translators: %s refers to a CSS class on the access form. */
+            echo "<br /><em>" . sprintf( __( "You can manually style this on all access forms using the %s CSS class.", "content-protector" ), "</em><code>label.content-protector-form-instructions</code><em>" ) . "</em>";
         }
 
         function __formInstructionsFontSizeFieldCallback() {
             $option_values = array_combine( range( 8, 20 ), range( 8, 20 ) );
-            $current_value = get_option( CONTENT_PROTECTOR_HANDLE . '_form_instructions_font_size', CONTENT_PROTECTOR_DEFAULT_FONT_SIZE );
+            $current_value = get_option( CONTENT_PROTECTOR_HANDLE . '_form_instructions_font_size', CONTENT_PROTECTOR_DEFAULT_FONT_SIZE_OPTION );
 
             echo '<select name="' . CONTENT_PROTECTOR_HANDLE . '_form_instructions_font_size' . '" id="' . CONTENT_PROTECTOR_HANDLE . '_form_instructions_font_size' . '">';
+            echo '<option value="0" ' . selected( '0', $current_value, false ) . ' >Default</option>';
             foreach ( $option_values as $value => $label)  {
-                echo '<option value="' . $value .'" ' . selected( $value, $current_value, false ) . ' >' . $label . ' px</option>';
+                echo '<option value="' . $value .'" ' . selected( $value, $current_value, false ) . '>' . $label . ' px</option>';
             }
             echo '</select>';
-            echo "&nbsp;" . __( "Font size of the form instructions text.", CONTENT_PROTECTOR_SLUG );
+            echo "<br />" . __( "Font size of the form instructions text.", "content-protector" );
         }
 
         function __formInstructionsFontWeightFieldCallback() {
@@ -618,28 +783,29 @@ if ( !class_exists("contentProtectorPlugin") ) {
 
             echo '<select name="' . CONTENT_PROTECTOR_HANDLE . '_form_instructions_font_weight' . '" id="' . CONTENT_PROTECTOR_HANDLE . '_form_instructions_font_weight' . '">';
             foreach ( $option_values as $value => $label)  {
-                echo '<option value="' . $value .'" ' . selected( $value, $current_value, false ) . ' >' . $label . ' px</option>';
+                echo '<option value="' . $value .'" ' . selected( $value, $current_value, false ) . '>' . $label . '</option>';
             }
             echo '</select>';
-            echo "&nbsp;" . __( "Font weight of the form instructions text (400 is normal, 700 is <b>bold</b>).", CONTENT_PROTECTOR_SLUG );
+            echo "<br />" . __( "Font weight of the form instructions text (400 is normal, 700 is bold).", "content-protector" );
         }
 
         function __formInstructionsColorFieldCallback() {
             $current_value = get_option( CONTENT_PROTECTOR_HANDLE . '_form_instructions_color', "" );
             echo '<input type="text" name="' . CONTENT_PROTECTOR_HANDLE . '_form_instructions_color' . '" id="' . CONTENT_PROTECTOR_HANDLE . '_form_instructions_color' . '" value="' . $current_value . '" size="7" maxlength="7" style="width: 100px;" />';
-            echo "&nbsp;" . __( "Color of the form instructions text.", CONTENT_PROTECTOR_SLUG );
+            echo "<br />" . __( "Color of the form instructions text.", "content-protector" );
         }
 
         function __ajaxLoadingMessageSettingsSectionFieldCallback() {
-            _e("Customize the &quot;Loading&quot; message on the access forms when using AJAX for inline loading of your protected content.", CONTENT_PROTECTOR_SLUG );
+            _e("Customize the loading message on the access forms when using AJAX for inline loading of your protected content.", "content-protector" );
         }
 
         function __ajaxLoadingMessageFieldCallback() {
             echo '<input type="text" class="regular-text" name="' . CONTENT_PROTECTOR_HANDLE . '_ajax_loading_message' . '" id="' . CONTENT_PROTECTOR_HANDLE . '_ajax_loading_message' . '" value="' . get_option( CONTENT_PROTECTOR_HANDLE . '_ajax_loading_message', CONTENT_PROTECTOR_DEFAULT_AJAX_LOADING_MESSAGE ) . '" />';
-            echo "&nbsp;<a href=\"javascript:;\" id=\"ajax-loading-message-reset\">" . __( "Reset To Default", CONTENT_PROTECTOR_SLUG ) . "</a>";
+            echo "&nbsp;<a href=\"javascript:;\" id=\"ajax-loading-message-reset\">" . __( "Reset To Default", "content-protector" ) . "</a>";
             echo "<div style=\"clear: both;\"></div>";
-            echo __( "When using AJAX, this message is displayed while the password is being checked.", CONTENT_PROTECTOR_SLUG );
-            echo "<br /><em>" . sprintf( __( "You can manually style this on all access forms using the %s CSS class.", CONTENT_PROTECTOR_SLUG ), "</em><code>div.content-protector-ajaxLoading</code><em>" ) . "</em>";
+            echo __( "When using AJAX, this message is displayed while the password is being checked.", "content-protector" );
+            /* translators: %s refers to a CSS class on the access form. */
+            echo "<br /><em>" . sprintf( __( "You can manually style this on all access forms using the %s CSS class.", "content-protector" ), "</em><code>div.content-protector-ajaxLoading</code><em>" ) . "</em>";
         }
 
         function __ajaxLoadingMessageFontWeightFieldCallback() {
@@ -648,10 +814,10 @@ if ( !class_exists("contentProtectorPlugin") ) {
 
             echo '<select name="' . CONTENT_PROTECTOR_HANDLE . '_ajax_loading_message_font_weight' . '" id="' . CONTENT_PROTECTOR_HANDLE . '_ajax_loading_message_font_weight' . '">';
             foreach ( $option_values as $value => $label)  {
-                echo '<option value="' . $value .'" ' . selected( $value, $current_value, false ) . ' >' . $label . ' px</option>';
+                echo '<option value="' . $value .'" ' . selected( $value, $current_value, false ) . '>' . $label . '</option>';
             }
             echo '</select>';
-            echo "&nbsp;" . __( "Font weight of the AJAX loading message text (400 is normal, 700 is <b>bold</b>).", CONTENT_PROTECTOR_SLUG );
+            echo "<br />" . __( "Font weight of the AJAX loading message text (400 is normal, 700 is bold).", "content-protector" );
         }
 
         function __ajaxLoadingMessageFontStyleFieldCallback() {
@@ -661,46 +827,48 @@ if ( !class_exists("contentProtectorPlugin") ) {
 
             echo "<select name=\"" . CONTENT_PROTECTOR_HANDLE . "_ajax_loading_message_font_style\" id=\"" . CONTENT_PROTECTOR_HANDLE . "_ajax_loading_message_font_style\">";
             foreach ( $option_values as $value => $label)  {
-                echo '<option value="' . $value .'" ' . selected( $value, $current_value, false ) . ' >' . $label . '</option>';
+                echo '<option value="' . $value .'" ' . selected( $value, $current_value, false ) . '>' . $label . '</option>';
             }
             echo '</select>';
-            echo "&nbsp;" . __( "Font style of the AJAX loading message text.", CONTENT_PROTECTOR_SLUG );
+            echo "<br />" . __( "Font style of the AJAX loading message text.", "content-protector" );
         }
 
         function __ajaxLoadingMessageColorFieldCallback() {
             $current_value = get_option( CONTENT_PROTECTOR_HANDLE . '_ajax_loading_message_color', "" );
             echo '<input type="text" name="' . CONTENT_PROTECTOR_HANDLE . '_ajax_loading_message_color' . '" id="' . CONTENT_PROTECTOR_HANDLE . '_ajax_loading_message_color' . '" value="' . $current_value . '" size="7" maxlength="7" style="width: 100px;" />';
-            echo "&nbsp;" . __( "Color of the AJAX loading message text.", CONTENT_PROTECTOR_SLUG );
+            echo "<br />" . __( "Color of the AJAX loading message text.", "content-protector" );
         }
 
         function __successMessageSettingsSectionFieldCallback() {
-            _e("Customize the message displayed when the correct password is entered.", CONTENT_PROTECTOR_SLUG );
+            _e( "Customize the message displayed when the correct password is entered.", "content-protector" );
         }
 
         function __successMessageDisplayFieldCallback() {
             $current_value = get_option( CONTENT_PROTECTOR_HANDLE . '_success_message_display', "" );
             echo '<input type="checkbox" name="' . CONTENT_PROTECTOR_HANDLE . '_success_message_display" id="' . CONTENT_PROTECTOR_HANDLE . '_success_message_display" value="1"' . ( ( ( isset( $current_value ) ) && ( $current_value == "1" ) ) ? ' checked="checked"' : '' ) . ' />';
-            echo '&nbsp;<label for="' . CONTENT_PROTECTOR_HANDLE . '_success_message_display">' . __( "Show the success message when a user first successfully logs in.", CONTENT_PROTECTOR_SLUG ) . '</label>';
+            echo '<br /><label for="' . CONTENT_PROTECTOR_HANDLE . '_success_message_display">' . __( "Show the success message when a user first successfully logs in.", "content-protector" ) . '</label>';
         }
 
         function __successMessageFieldCallback() {
             echo '<input type="text" class="regular-text" name="' . CONTENT_PROTECTOR_HANDLE . '_success_message' . '" id="' . CONTENT_PROTECTOR_HANDLE . '_success_message' . '" value="' . get_option( CONTENT_PROTECTOR_HANDLE . '_success_message', CONTENT_PROTECTOR_DEFAULT_SUCCESS_MESSAGE ) . '" />';
-            echo "&nbsp;<a href=\"javascript:;\" id=\"success-message-reset\">" . __( "Reset To Default", CONTENT_PROTECTOR_SLUG ) . "</a>";
+            echo "&nbsp;<a href=\"javascript:;\" id=\"success-message-reset\">" . __( "Reset To Default", "content-protector" ) . "</a>";
             echo "<div style=\"clear: both;\"></div>";
-            echo __( "Message when your users enter the correct password.", CONTENT_PROTECTOR_SLUG );
-            echo "<br /><em>" . sprintf( __( "You can manually style this on all access forms using the %s CSS class.", CONTENT_PROTECTOR_SLUG ), "</em><code>div.content-protector-correct-password</code><em>" ) . "</em>";
+            echo __( "Message when your users enter the correct password.", "content-protector" );
+            /* translators: %s refers to a CSS class on the access form. */
+            echo "<br /><em>" . sprintf( __( "You can manually style this on all access forms using the %s CSS class.", "content-protector" ), "</em><code>div.content-protector-correct-password</code><em>" ) . "</em>";
         }
 
         function __successMessageFontSizeFieldCallback() {
             $option_values = array_combine( range( 8, 20 ), range( 8, 20 ) );
-            $current_value = get_option( CONTENT_PROTECTOR_HANDLE . '_success_message_font_size', CONTENT_PROTECTOR_DEFAULT_FONT_SIZE );
+            $current_value = get_option( CONTENT_PROTECTOR_HANDLE . '_success_message_font_size', CONTENT_PROTECTOR_DEFAULT_FONT_SIZE_OPTION );
 
             echo '<select name="' . CONTENT_PROTECTOR_HANDLE . '_success_message_font_size' . '" id="' . CONTENT_PROTECTOR_HANDLE . '_success_message_font_size' . '">';
+            echo '<option value="0" ' . selected( '0', $current_value, false ) . ' >Default</option>';
             foreach ( $option_values as $value => $label)  {
-                echo '<option value="' . $value .'" ' . selected( $value, $current_value, false ) . ' >' . $label . ' px</option>';
+                echo '<option value="' . $value .'" ' . selected( $value, $current_value, false ) . '>' . $label . ' px</option>';
             }
             echo '</select>';
-            echo "&nbsp;" . __( "Font size of the success message text.", CONTENT_PROTECTOR_SLUG );
+            echo "<br />" . __( "Font size of the success message text.", "content-protector" );
         }
 
         function __successMessageFontWeightFieldCallback() {
@@ -709,40 +877,42 @@ if ( !class_exists("contentProtectorPlugin") ) {
 
             echo '<select name="' . CONTENT_PROTECTOR_HANDLE . '_success_message_font_weight' . '" id="' . CONTENT_PROTECTOR_HANDLE . '_success_message_font_weight' . '">';
             foreach ( $option_values as $value => $label)  {
-                echo '<option value="' . $value .'" ' . selected( $value, $current_value, false ) . ' >' . $label . ' px</option>';
+                echo '<option value="' . $value .'" ' . selected( $value, $current_value, false ) . '>' . $label . '</option>';
             }
             echo '</select>';
-            echo "&nbsp;" . __( "Font weight of the success message text (400 is normal, 700 is <b>bold</b>).", CONTENT_PROTECTOR_SLUG );
+            echo "<br />" . __( "Font weight of the success message text (400 is normal, 700 is bold).", "content-protector" );
         }
 
         function __successMessageColorFieldCallback() {
             $current_value = get_option( CONTENT_PROTECTOR_HANDLE . '_success_message_color', "" );
             echo '<input type="text" name="' . CONTENT_PROTECTOR_HANDLE . '_success_message_color' . '" id="' . CONTENT_PROTECTOR_HANDLE . '_success_message_color' . '" value="' . $current_value . '" size="7" maxlength="7" style="width: 100px;" />';
-            echo "&nbsp;" . __( "Color of the success message text.", CONTENT_PROTECTOR_SLUG );
+            echo "<br />" . __( "Color of the success message text.", "content-protector" );
         }
 
         function __errorMessageSettingsSectionFieldCallback() {
-            _e("Customize the message displayed when an incorrect password is entered.", CONTENT_PROTECTOR_SLUG );
+            _e( "Customize the message displayed when an incorrect password is entered.", "content-protector" );
         }
 
         function __errorMessageFieldCallback() {
             echo '<input type="text" class="regular-text" name="' . CONTENT_PROTECTOR_HANDLE . '_error_message' . '" id="' . CONTENT_PROTECTOR_HANDLE . '_error_message' . '" value="' . get_option( CONTENT_PROTECTOR_HANDLE . '_error_message', CONTENT_PROTECTOR_DEFAULT_ERROR_MESSAGE ) . '" />';
-            echo "&nbsp;<a href=\"javascript:;\" id=\"error-message-reset\">" . __( "Reset To Default", CONTENT_PROTECTOR_SLUG ) . "</a>";
+            echo "&nbsp;<a href=\"javascript:;\" id=\"error-message-reset\">" . __( "Reset To Default", "content-protector" ) . "</a>";
             echo "<div style=\"clear: both;\"></div>";
-            echo __( "Error message when your users enter an incorrect password.", CONTENT_PROTECTOR_SLUG );
-            echo "<br /><em>" . sprintf( __( "You can manually style this on all access forms using the %s CSS class.", CONTENT_PROTECTOR_SLUG ), "</em><code>div.content-protector-incorrect-password</code><em>" ) . "</em>";
+            echo __( "Error message when your users enter an incorrect password.", "content-protector" );
+            /* translators: %s refers to a CSS class on the access form. */
+            echo "<br /><em>" . sprintf( __( "You can manually style this on all access forms using the %s CSS class.", "content-protector" ), "</em><code>div.content-protector-incorrect-password</code><em>" ) . "</em>";
         }
 
         function __errorMessageFontSizeFieldCallback() {
             $option_values = array_combine( range( 8, 20 ), range( 8, 20 ) );
-            $current_value = get_option( CONTENT_PROTECTOR_HANDLE . '_error_message_font_size', CONTENT_PROTECTOR_DEFAULT_FONT_SIZE );
+            $current_value = get_option( CONTENT_PROTECTOR_HANDLE . '_error_message_font_size', CONTENT_PROTECTOR_DEFAULT_FONT_SIZE_OPTION );
 
             echo '<select name="' . CONTENT_PROTECTOR_HANDLE . '_error_message_font_size' . '" id="' . CONTENT_PROTECTOR_HANDLE . '_error_message_font_size' . '">';
+            echo '<option value="0" ' . selected( '0', $current_value, false ) . ' >Default</option>';
             foreach ( $option_values as $value => $label)  {
-                echo '<option value="' . $value .'" ' . selected( $value, $current_value, false ) . ' >' . $label . ' px</option>';
+                echo '<option value="' . $value .'" ' . selected( $value, $current_value, false ) . '>' . $label . ' px</option>';
             }
             echo '</select>';
-            echo "&nbsp;" . __( "Font size of the error message text.", CONTENT_PROTECTOR_SLUG );
+            echo "<br />" . __( "Font size of the error message text.", "content-protector" );
         }
 
         function __errorMessageFontWeightFieldCallback() {
@@ -751,45 +921,148 @@ if ( !class_exists("contentProtectorPlugin") ) {
 
             echo '<select name="' . CONTENT_PROTECTOR_HANDLE . '_error_message_font_weight' . '" id="' . CONTENT_PROTECTOR_HANDLE . '_error_message_font_weight' . '">';
             foreach ( $option_values as $value => $label)  {
-                echo '<option value="' . $value .'" ' . selected( $value, $current_value, false ) . ' >' . $label . ' px</option>';
+                echo '<option value="' . $value .'" ' . selected( $value, $current_value, false ) . '>' . $label . '</option>';
             }
             echo '</select>';
-            echo "&nbsp;" . __( "Font weight of the error message text (400 is normal, 700 is <b>bold</b>).", CONTENT_PROTECTOR_SLUG );
+            echo "<br />" . __( "Font weight of the error message text (400 is normal, 700 is bold).", "content-protector" );
         }
 
         function __errorMessageColorFieldCallback() {
             $current_value = get_option( CONTENT_PROTECTOR_HANDLE . '_error_message_color', "" );
             echo '<input type="text" name="' . CONTENT_PROTECTOR_HANDLE . '_error_message_color' . '" id="' . CONTENT_PROTECTOR_HANDLE . '_error_message_color' . '" value="' . $current_value . '" size="7" maxlength="7" style="width: 100px;" />';
-            echo "&nbsp;" . __( "Color of the error message text.", CONTENT_PROTECTOR_SLUG );
+            echo "<br />" . __( "Color of the error message text.", "content-protector" );
         }
 
         function __formSubmitLabelSettingsSectionFieldCallback() {
-            _e("Customize the &quot;Submit&quot; button on the access forms.", CONTENT_PROTECTOR_SLUG );
+            _e( "Customize the submit button on the access forms.", "content-protector" );
         }
 
         function __formSubmitLabelFieldCallback() {
             echo '<input type="text" class="regular-text" name="' . CONTENT_PROTECTOR_HANDLE . '_form_submit_label' . '" id="' . CONTENT_PROTECTOR_HANDLE . '_form_submit_label' . '" value="' . get_option( CONTENT_PROTECTOR_HANDLE . '_form_submit_label', CONTENT_PROTECTOR_DEFAULT_FORM_SUBMIT_LABEL ) . '" />';
-            echo "&nbsp;<a href=\"javascript:;\" id=\"form-submit-reset\">" . __( "Reset To Default", CONTENT_PROTECTOR_SLUG ) . "</a>";
+            echo "&nbsp;<a href=\"javascript:;\" id=\"form-submit-reset\">" . __( "Reset To Default", "content-protector" ) . "</a>";
             echo "<div style=\"clear: both;\"></div>";
-            echo __( "Customize the &quot;Submit&quot; button label on the form.", CONTENT_PROTECTOR_SLUG );
-            echo "<br /><em>" . sprintf( __( "You can manually style the form submit button on all access forms using the %s CSS class.", CONTENT_PROTECTOR_SLUG ), "</em><code>input.content-protector-form-submit</code><em>" ) . "</em>";
+            echo __( "Customize the submit button label on the form.", "content-protector" );
+            /* translators: %s refers to a CSS class on the access form. */
+            echo "<br /><em>" . sprintf( __( "You can manually style this on all access forms using the %s CSS class.", "content-protector" ), "</em><code>input.content-protector-form-submit</code><em>" ) . "</em>";
         }
 
         function __formSubmitLabelColorFieldCallback() {
             $current_value = get_option( CONTENT_PROTECTOR_HANDLE . '_form_submit_label_color', "" );
             echo '<input type="text" name="' . CONTENT_PROTECTOR_HANDLE . '_form_submit_label_color' . '" id="' . CONTENT_PROTECTOR_HANDLE . '_form_submit_label_color' . '" value="' . $current_value . '" size="7" maxlength="7" style="width: 100px;" />';
-            echo "&nbsp;" . __( "Color of the form submit label text.", CONTENT_PROTECTOR_SLUG );
+            echo "<br />" . __( "Color of the form submit label text.", "content-protector" );
         }
 
         function __formSubmitButtonColorFieldCallback() {
             $current_value = get_option( CONTENT_PROTECTOR_HANDLE . '_form_submit_button_color', "" );
             echo '<input type="text" name="' . CONTENT_PROTECTOR_HANDLE . '_form_submit_button_color' . '" id="' . CONTENT_PROTECTOR_HANDLE . '_form_submit_button_color' . '" value="' . $current_value . '" size="7" maxlength="7" style="width: 100px;" />';
-            echo "&nbsp;" . __( "Color of the form submit button.", CONTENT_PROTECTOR_SLUG );
+            echo "<br />" . __( "Color of the form submit button.", "content-protector" );
         }
 
-         function __formCSSSettingsSectionFieldCallback() {
-            _e("Customize the overall look-and-feel of your access forms.", CONTENT_PROTECTOR_SLUG );
-            echo "<br /><em>" . sprintf( __( "You can manually style the overall look of all access forms using the %s CSS class.", CONTENT_PROTECTOR_SLUG ), "</em><code>form.content-protector-access-form</code><em>" ) . "</em>";
+        function __captchaSettingsSectionFieldCallback() {
+            _e( "Customize the CAPTCHA on the access forms.", "content-protector" );
+            /* translators: %s refers to the input.content-protector-captcha-img CSS class on the access form. */
+            echo "<br /><em>" . sprintf( __( "You can manually style the CAPTCHA image on all access forms using the %s CSS class.", "content-protector" ), "</em><code>input.content-protector-captcha-img</code><em>" ) . "</em>";
+        }
+
+        function __captchaInstructionsFieldCallback() {
+            echo '<textarea style="vertical-align: top;" rows="4" cols="70" class="regular-text" name="' . CONTENT_PROTECTOR_HANDLE . '_captcha_instructions' . '" id="' . CONTENT_PROTECTOR_HANDLE . '_captcha_instructions' . '">' . get_option( CONTENT_PROTECTOR_HANDLE . '_captcha_instructions', CONTENT_PROTECTOR_DEFAULT_CAPTCHA_INSTRUCTIONS ) . '</textarea>';
+            echo "&nbsp;<a href=\"javascript:;\" id=\"captcha-instructions-reset\">" . __( "Reset To Default", "content-protector" ) . "</a>";
+            echo "<div style=\"clear: both;\"></div>";
+            echo __( "Instructions for filling in the CAPTCHA.", "content-protector" );
+            /* translators: %s refers to a CSS class on the access form. */
+            echo "<br /><em>" . sprintf( __( "You can manually style this on all access forms using the %s CSS class.", "content-protector" ), "</em><code>label.content-protector-form-instructions</code><em>" ) . "</em>";
+        }
+
+        function __captchaInstructionsDisplayFieldCallback() {
+            $option_values = array( "0" => "Do not display",
+                "1" => "Display with Form Instructions",
+                "2" => "Display instead of Form Instructions" );
+            $current_value = get_option( CONTENT_PROTECTOR_HANDLE . "_captcha_instructions_display", "1" );
+
+            echo "<select name=\"" . CONTENT_PROTECTOR_HANDLE . "_captcha_instructions_display\" id=\"" . CONTENT_PROTECTOR_HANDLE . "_captcha_instructions_display\">";
+            foreach ( $option_values as $value => $label)  {
+                echo '<option value="' . $value .'" ' . selected( $value, $current_value, false ) . '>' . $label . '</option>';
+            }
+            echo '</select>';
+            echo "<br />" . __( "When using a CAPTCHA, how should the CAPTCHA Instructions be displayed?", "content-protector" );
+        }
+
+        function __captchaWidthFieldCallback() {
+            echo '<input type="text" class="regular-text" name="' . CONTENT_PROTECTOR_HANDLE . '_captcha_width' . '" id="' . CONTENT_PROTECTOR_HANDLE . '_captcha_width' . '" value="' . get_option( CONTENT_PROTECTOR_HANDLE . '_captcha_width', CONTENT_PROTECTOR_DEFAULT_CAPTCHA_WIDTH ) . '" />';
+            echo "&nbsp;<a href=\"javascript:;\" id=\"captcha-width-reset\">" . __( "Reset To Default", "content-protector" ) . "</a>";
+            echo "<br />" . __( "Set the width (in pixels) of the CAPTCHA box.", "content-protector" );
+        }
+
+        function __captchaHeightFieldCallback() {
+            echo '<input type="text" class="regular-text" name="' . CONTENT_PROTECTOR_HANDLE . '_captcha_height' . '" id="' . CONTENT_PROTECTOR_HANDLE . '_captcha_height' . '" value="' . get_option( CONTENT_PROTECTOR_HANDLE . '_captcha_height', CONTENT_PROTECTOR_DEFAULT_CAPTCHA_HEIGHT ) . '" />';
+            echo "&nbsp;<a href=\"javascript:;\" id=\"captcha-height-reset\">" . __( "Reset To Default", "content-protector" ) . "</a>";
+            echo "<br />" . __( "Set the height (in pixels) of the CAPTCHA box.", "content-protector" );
+        }
+
+        function __captchaTextCharsFieldCallback() {
+            echo '<input type="text" class="regular-text" name="' . CONTENT_PROTECTOR_HANDLE . '_captcha_text_chars' . '" id="' . CONTENT_PROTECTOR_HANDLE . '_captcha_text_chars' . '" value="' . get_option( CONTENT_PROTECTOR_HANDLE . '_captcha_text_chars', CONTENT_PROTECTOR_DEFAULT_CAPTCHA_TEXT_CHARS ) . '" />';
+            echo "&nbsp;<a href=\"javascript:;\" id=\"captcha-text-chars-reset\">" . __( "Reset To Default", "content-protector" ) . "</a>";
+            echo "<br />" . __( "Characters used to generate the CAPTCHA image text.", "content-protector" );
+        }
+
+        function __captchaTextLengthFieldCallback() {
+            $option_values = array_combine( range( 4, 8 ), range( 4, 8 ) );
+            $current_value = get_option( CONTENT_PROTECTOR_HANDLE . "_captcha_text_length", CONTENT_PROTECTOR_DEFAULT_CAPTCHA_TEXT_LENGTH );
+
+            echo "<select name=\"" . CONTENT_PROTECTOR_HANDLE . "_captcha_text_length\" id=\"" . CONTENT_PROTECTOR_HANDLE . "_captcha_text_length\">";
+            foreach ( $option_values as $value => $label)  {
+                echo '<option value="' . $value .'" ' . selected( $value, $current_value, false ) . '>' . $label . '</option>';
+            }
+            echo '</select>';
+            echo "<br />" . __( "String length of the CAPTCHA image text", "content-protector" );
+        }
+
+        function __captchaTextHeightFieldCallback() {
+            $option_values = array_combine( range( 0.4, 0.8, 0.05 ), range( 40, 80, 5 ) );
+            $current_value = get_option( CONTENT_PROTECTOR_HANDLE . "_captcha_text_height", CONTENT_PROTECTOR_DEFAULT_CAPTCHA_TEXT_HEIGHT_PCT );
+
+            echo "<select name=\"" . CONTENT_PROTECTOR_HANDLE . "_captcha_text_height\" id=\"" . CONTENT_PROTECTOR_HANDLE . "_captcha_text_height\">";
+            foreach ( $option_values as $value => $label)  {
+                echo '<option value="' . $value .'" ' . selected( $value, $current_value, false ) . '>' . $label . ' %</option>';
+            }
+            echo '</select>';
+            echo "<br />" . __( "Height of the CAPTCHA image text, relative to the image height", "content-protector" );
+        }
+
+        function __captchaTextAngleVarianceFieldCallback() {
+            $option_values = array_combine( range( 0, 30, 5 ), range( 0, 30, 5 ) );
+            $current_value = get_option( CONTENT_PROTECTOR_HANDLE . "_captcha_text_angle_variance", "0" );
+
+            echo "<select name=\"" . CONTENT_PROTECTOR_HANDLE . "_captcha_text_angle_variance\" id=\"" . CONTENT_PROTECTOR_HANDLE . "_captcha_text_angle_variance\">";
+            foreach ( $option_values as $value => $label)  {
+                echo '<option value="' . $value .'" ' . selected( $value, $current_value, false ) . '>+/- ' . $label . '&deg;</option>';
+            }
+            echo '</select>';
+            echo "<br />" . __( "Maximum angle of the CAPTCHA image text (the angle of the text will vary within this range for each CAPTCHA image)", "content-protector" );
+        }
+
+        function __captchaBackgroundColorFieldCallback() {
+            $current_value = get_option( CONTENT_PROTECTOR_HANDLE . '_captcha_background_color', "" );
+            echo '<input type="text" name="' . CONTENT_PROTECTOR_HANDLE . '_captcha_background_color' . '" id="' . CONTENT_PROTECTOR_HANDLE . '_captcha_background_color' . '" value="' . $current_value . '" size="7" maxlength="7" style="width: 100px;" />';
+            echo "<br />" . __( "Color of the CAPTCHA background.", "content-protector" );
+        }
+
+        function __captchaTextColorFieldCallback() {
+            $current_value = get_option( CONTENT_PROTECTOR_HANDLE . '_captcha_text_color', "" );
+            echo '<input type="text" name="' . CONTENT_PROTECTOR_HANDLE . '_captcha_text_color' . '" id="' . CONTENT_PROTECTOR_HANDLE . '_captcha_text_color' . '" value="' . $current_value . '" size="7" maxlength="7" style="width: 100px;" />';
+            echo "<br />" . __( "Color of the CAPTCHA text.", "content-protector" );
+        }
+
+        function __captchaNoiseColorFieldCallback() {
+            $current_value = get_option( CONTENT_PROTECTOR_HANDLE . '_captcha_noise_color', "" );
+            echo '<input type="text" name="' . CONTENT_PROTECTOR_HANDLE . '_captcha_noise_color' . '" id="' . CONTENT_PROTECTOR_HANDLE . '_captcha_noise_color' . '" value="' . $current_value . '" size="7" maxlength="7" style="width: 100px;" />';
+            echo "<br />" . __( "Color of the CAPTCHA background noise.", "content-protector" );
+        }
+
+        function __formCSSSettingsSectionFieldCallback() {
+            _e( "Customize the overall look-and-feel of your access forms.", "content-protector" );
+            /* translators: %s refers to the 'form.content-protector-access-form' CSS class. */
+            echo "<br /><em>" . sprintf( __( "You can manually style the overall look of all access forms using the %s CSS class.", "content-protector" ), "</em><code>form.content-protector-access-form</code><em>" ) . "</em>";
         }
 
         function __formBorderStyleFieldCallback() {
@@ -802,13 +1075,13 @@ if ( !class_exists("contentProtectorPlugin") ) {
                 echo '<option value="' . $value .'" ' . selected( $value, $current_value, false ) . ' >' . $label . '</option>';
             }
             echo '</select>';
-            echo "&nbsp;" . __( "Border style of the access form.", CONTENT_PROTECTOR_SLUG );
+            echo "<br />" . __( "Border style of the access form.", "content-protector" );
         }
 
         function __formBorderColorFieldCallback() {
             $current_value = get_option( CONTENT_PROTECTOR_HANDLE . '_border_color', "" );
             echo '<input type="text" name="' . CONTENT_PROTECTOR_HANDLE . '_border_color' . '" id="' . CONTENT_PROTECTOR_HANDLE . '_border_color' . '" value="' . $current_value . '" size="7" maxlength="7" style="width: 100px;" />';
-            echo "&nbsp;" . __( "Border color of the access form.", CONTENT_PROTECTOR_SLUG );
+            echo "<br />" . __( "Border color of the access form.", "content-protector" );
         }
 
         function __formBorderRadiusFieldCallback() {
@@ -820,7 +1093,7 @@ if ( !class_exists("contentProtectorPlugin") ) {
                 echo '<option value="' . $value .'" ' . selected( $value, $current_value, false ) . ' >' . $label . ' px</option>';
             }
             echo '</select>';
-            echo "&nbsp;" . __( "Border radius (curvature of the corners) of the access form.", CONTENT_PROTECTOR_SLUG );
+            echo "<br />" . __( "Border radius (curvature of the corners) of the access form.", "content-protector" );
         }
 
         function __formBorderWidthFieldCallback() {
@@ -832,7 +1105,7 @@ if ( !class_exists("contentProtectorPlugin") ) {
                 echo '<option value="' . $value .'" ' . selected( $value, $current_value, false ) . ' >' . $label . ' px</option>';
             }
             echo '</select>';
-            echo "&nbsp;" . __( "Border width of the access form.", CONTENT_PROTECTOR_SLUG );
+            echo "<br />" . __( "Border width of the access form.", "content-protector" );
         }
 
         function __formPaddingFieldCallback() {
@@ -844,35 +1117,36 @@ if ( !class_exists("contentProtectorPlugin") ) {
                 echo '<option value="' . $value .'" ' . selected( $value, $current_value, false ) . ' >' . $label . ' px</option>';
             }
             echo '</select>';
-            echo "&nbsp;" . __( "Padding inside the border of the access form.", CONTENT_PROTECTOR_SLUG );
+            echo "<br />" . __( "Padding inside the border of the access form.", "content-protector" );
         }
 
         function __formBackgroundColorFieldCallback() {
             $current_value = get_option( CONTENT_PROTECTOR_HANDLE . '_background_color', "" );
             echo '<input type="text" name="' . CONTENT_PROTECTOR_HANDLE . '_background_color' . '" id="' . CONTENT_PROTECTOR_HANDLE . '_background_color' . '" value="' . $current_value . '" size="7" maxlength="7" style="width: 100px;" />';
-            echo "&nbsp;" . __( "Background color of the access form.", CONTENT_PROTECTOR_SLUG );
+            echo "<br />" . __( "Background color of the access form.", "content-protector" );
         }
 
         function __formCSSFieldCallback() {
             echo '<textarea style="vertical-align: top; float: left;" rows="12" cols="70" class="regular-text" name="' . CONTENT_PROTECTOR_HANDLE . '_form_css' . '" id="' . CONTENT_PROTECTOR_HANDLE . '_form_css' . '">' . get_option( CONTENT_PROTECTOR_HANDLE . '_form_css', "" ) . '</textarea>';
-            echo "&nbsp;<a href=\"javascript:;\" id=\"form-css-all\">" . __( "Add CSS scaffolding for all access forms", CONTENT_PROTECTOR_SLUG ) . "</a>";
-            echo "<br />&nbsp;<a href=\"javascript:;\" id=\"form-css-ident\">" . __( "Add CSS scaffolding for a specific access form", CONTENT_PROTECTOR_SLUG ) . "</a>";
-            echo "<br />&nbsp;<a href=\"javascript:;\" id=\"form-css-reset\">" . _x( "Clear", "Clear the textarea", CONTENT_PROTECTOR_SLUG ) . "</a>";
+            echo "&nbsp;<a href=\"javascript:;\" id=\"form-css-all\">" . __( "Add CSS scaffolding for all access forms", "content-protector" ) . "</a>";
+            echo "<br />&nbsp;<a href=\"javascript:;\" id=\"form-css-ident\">" . __( "Add CSS scaffolding for a specific access form", "content-protector" ) . "</a>";
+            echo "<br />&nbsp;<a href=\"javascript:;\" id=\"form-css-reset\">" . _x( "Clear", "Clear the textarea", "content-protector" ) . "</a>";
             echo "<div style=\"clear: both;\"></div>";
-            echo __( "Apply custom CSS to your access form. <strong>Knowledge of CSS required.</strong>", CONTENT_PROTECTOR_SLUG );
+            echo __( "Apply custom CSS to your access form.", "content-protector" );
+            echo " <strong>" . __( "Knowledge of CSS required.", "content-protector" ) . "</strong>";
         }
 
         function __generalSettingsSectionFieldCallback() {
-            echo __( "Control how your content is protected.", CONTENT_PROTECTOR_SLUG );
+            echo __( "Control how your content is protected.", "content-protector" );
         }
 
         function __encryptionAlgorithmFieldCallback() {
-            $option_values = array( "CRYPT_STD_DES" => _x( "Standard DES", "Encryption algorithm", CONTENT_PROTECTOR_SLUG ),
-                "CRYPT_EXT_DES" => _x( "Extended DES", "Encryption algorithm", CONTENT_PROTECTOR_SLUG ),
-                "CRYPT_MD5" => _x( "MD5", "Encryption algorithm", CONTENT_PROTECTOR_SLUG ),
-                "CRYPT_BLOWFISH" => _x( "Blowfish", "Encryption algorithm", CONTENT_PROTECTOR_SLUG ),
-                "CRYPT_SHA256" => _x( "SHA-256", "Encryption algorithm", CONTENT_PROTECTOR_SLUG ),
-                "CRYPT_SHA512" => _x( "SHA-512", "Encryption algorithm", CONTENT_PROTECTOR_SLUG ) );
+            $option_values = array( "CRYPT_STD_DES" => _x( "Standard DES", "Encryption algorithm", "content-protector" ),
+                "CRYPT_EXT_DES" => _x( "Extended DES", "Encryption algorithm", "content-protector" ),
+                "CRYPT_MD5" => _x( "MD5", "Encryption algorithm", "content-protector" ),
+                "CRYPT_BLOWFISH" => _x( "Blowfish", "Encryption algorithm", "content-protector" ),
+                "CRYPT_SHA256" => _x( "SHA-256", "Encryption algorithm", "content-protector" ),
+                "CRYPT_SHA512" => _x( "SHA-512", "Encryption algorithm", "content-protector" ) );
             $current_value = get_option( CONTENT_PROTECTOR_HANDLE . "_encryption_algorithm", CONTENT_PROTECTOR_DEFAULT_ENCRYPTION_ALGORITHM );
 
             echo "<select name=\"" . CONTENT_PROTECTOR_HANDLE . "_encryption_algorithm\" id=\"" . CONTENT_PROTECTOR_HANDLE . "_encryption_algorithm\">";
@@ -881,26 +1155,28 @@ if ( !class_exists("contentProtectorPlugin") ) {
                     echo '<option value="' . $value .'" ' . selected( $value, $current_value, false ) . '>' . $label . '</option>';
             }
             echo '</select>';
-            echo "<br />" . __( "Select the encryption algorithm to encrypt the password for your protected content. Only those algorithms supported by your server are listed.", CONTENT_PROTECTOR_SLUG );
-            echo "<br />" . sprintf( __( "More info at <a href=\"%1\$s\">%2\$s</a>.", CONTENT_PROTECTOR_SLUG ),
-                _x( "http://www.php.net/manual/en/function.crypt.php", "URL for PHP's crypt() man page (language-specific)", CONTENT_PROTECTOR_SLUG ),
-                _x( "PHP's crypt() man page", "Link text for PHP's crypt() man page (language-specific)", CONTENT_PROTECTOR_SLUG ) );
+            echo "<p>" . __( "Select the encryption algorithm to encrypt the password for your protected content. Only those algorithms supported by your server are listed.", "content-protector" ) . "</p>";
+            /* translators: %1$s refers to 'URL for PHP's crypt() man page (if available, please change this to link to the URL for your translated language).'; %2$s refers to 'Link text for PHP's crypt() man page (language-specific)'. */
+            echo "<p>" . sprintf( __( 'More info at <a href="%1$s">%2$s</a>.', "content-protector" ),
+                _x( "http://www.php.net/manual/en/function.crypt.php", "URL for PHP's crypt() man page (if available, please change this to link to the URL for your translated language).", "content-protector" ),
+                _x( "PHP's crypt() man page", "Link text for PHP's crypt() man page (language-specific)", "content-protector" ) ) . "</p>";
         }
 
         function __shareAuthFieldCallback() {
-            echo "<p>" . __( "If checked, sets a cookie to share authorization among protected content sections if the sections share specific properties.", CONTENT_PROTECTOR_SLUG ) . "</p>";
+            echo "<p>" . __( "If checked, sets a cookie to share authorization among protected content sections if the sections share specific properties.", "content-protector" ) . "</p>";
             $current_values = get_option( CONTENT_PROTECTOR_HANDLE . '_share_auth', array() );
             echo '<input type="checkbox" name="' . CONTENT_PROTECTOR_HANDLE . '_share_auth[same_page]" id="' . CONTENT_PROTECTOR_HANDLE . '_share_auth_same_page" value="1"' . ( ( ( isset( $current_values['same_page'] ) ) && ( $current_values['same_page'] == "1" ) ) ? ' checked="checked"' : '' ) . ' />';
-            echo '<label for="' . CONTENT_PROTECTOR_HANDLE . '_share_auth_same_page">' . __( "Share authorization for protected content that share the same Post/Page and Password", CONTENT_PROTECTOR_SLUG ) . '</label><br />';
+            echo '<label for="' . CONTENT_PROTECTOR_HANDLE . '_share_auth_same_page">' . __( "Share authorization for protected content that share the same Post/Page and Password", "content-protector" ) . '</label><br />';
             echo '<input type="checkbox" name="' . CONTENT_PROTECTOR_HANDLE . '_share_auth[same_identifier]" id="' . CONTENT_PROTECTOR_HANDLE . '_share_auth_same_identifier" value="1"' . ( ( ( isset( $current_values['same_identifier']  ) ) && ( $current_values['same_identifier'] == "1" ) ) ? ' checked="checked"' : '' ) . ' />';
-            echo '<label for="' . CONTENT_PROTECTOR_HANDLE . '_share_auth_same_identifier">' . __( "Share authorization for protected content that share the same Identifier and Password", CONTENT_PROTECTOR_SLUG ) . '</label><br />';
-            echo "<p>" . __( "NOTE: Visitors must successfully log into one matching protected content section in order to automatically access the others.", CONTENT_PROTECTOR_SLUG ) . "</p>";
+            echo '<label for="' . CONTENT_PROTECTOR_HANDLE . '_share_auth_same_identifier">' . __( "Share authorization for protected content that share the same Identifier and Password", "content-protector" ) . '</label><br />';
+            echo "<p>" . __( "NOTE: Visitors must successfully log into one matching protected content section in order to automatically access the others.", "content-protector" ) . "</p>";
+            echo "<p>" . __( "NOTE: Will not work wth CAPTCHAs since passwords for CAPTCHA protected content are always changing.", "content-protector" ) . "</p>";
         }
 
         function __shareAuthDurationFieldCallback() {
             $current_value = get_option( CONTENT_PROTECTOR_HANDLE . '_share_auth_duration', CONTENT_PROTECTOR_DEFAULT_SHARE_AUTH_DURATION );
             echo '<input type="text" name="' . CONTENT_PROTECTOR_HANDLE . '_share_auth_duration' . '" id="' . CONTENT_PROTECTOR_HANDLE . '_share_auth_duration' . '" value="' . $current_value . '" size="7" style="width: 100px;" />';
-            echo "<p>" . __( "Duration (in seconds) for any shared authorization cookies.  Once a shared authorization cookie expires, any cookies previously set for individual protected content sections in the group will be referenced instead.", CONTENT_PROTECTOR_SLUG ) . "</p>";
+            echo "<p>" . __( "Duration (in seconds) for any shared authorization cookies.  Once a shared authorization cookie expires, any cookies previously set for individual protected content sections in the group will be referenced instead.", "content-protector" ) . "</p>";
         }
         /**
          * Prints out the Settings page.
@@ -949,7 +1225,7 @@ if ( !class_exists("contentProtectorPlugin") ) {
                     'contentProtectorAdminTinyMCEOptionsVars',
                     array( 'version' => CONTENT_PROTECTOR_VERSION,
                         'handle' => CONTENT_PROTECTOR_HANDLE,
-                        'desc' => __( "Add Content Protector shortcode", CONTENT_PROTECTOR_SLUG ),
+                        'desc' => __( "Add Content Protector shortcode", "content-protector" ),
                         'image' => $image ) );
             }
         }
@@ -981,12 +1257,24 @@ if ( !class_exists("contentProtectorPlugin") ) {
          *
          */
 		function contentProtectorPluginGetTinyMCEDialog()  {
+            include( "lib/jquery-ui-datetime-i18n.php" );
+
             wp_enqueue_style( CONTENT_PROTECTOR_SLUG . '-jquery-ui-css', CONTENT_PROTECTOR_JQUERY_UI_CSS );
             wp_enqueue_script( 'jquery-ui-datepicker' );
+            if( !( wp_script_is( CONTENT_PROTECTOR_SLUG . '-jquery-ui-datepicker-i18n-js', 'registered' ) ) ) {
+                wp_register_script( CONTENT_PROTECTOR_SLUG . '-jquery-ui-datepicker-i18n-js', CONTENT_PROTECTOR_PLUGIN_URL . "/js/content-protector-datepicker-i18n.js", array( 'jquery', 'jquery-ui-datepicker' ), CONTENT_PROTECTOR_VERSION );
+                wp_enqueue_script( CONTENT_PROTECTOR_SLUG . '-jquery-ui-datepicker-i18n-js' );
+                wp_localize_script( CONTENT_PROTECTOR_SLUG . '-jquery-ui-datepicker-i18n-js', 'ContentProtectorJQDatepickerI18n', $jquery_ui_datetime_datepicker_i18n );
+            }
             wp_register_style( CONTENT_PROTECTOR_SLUG . '-jquery-ui-timepicker-css', CONTENT_PROTECTOR_JQUERY_UI_TIMEPICKER_CSS );
             wp_enqueue_style( CONTENT_PROTECTOR_SLUG . '-jquery-ui-timepicker-css' );
-            wp_register_script( CONTENT_PROTECTOR_SLUG . '-jquery-ui-timepicker-js', CONTENT_PROTECTOR_JQUERY_UI_TIMEPICKER_JS, array('jquery', 'jquery-ui-datepicker'), TIMED_CONTENT_VERSION );
+            wp_register_script( CONTENT_PROTECTOR_SLUG . '-jquery-ui-timepicker-js', CONTENT_PROTECTOR_JQUERY_UI_TIMEPICKER_JS, array('jquery', 'jquery-ui-datepicker'), CONTENT_PROTECTOR_VERSION );
             wp_enqueue_script( CONTENT_PROTECTOR_SLUG . '-jquery-ui-timepicker-js' );
+            if( !( wp_script_is( CONTENT_PROTECTOR_SLUG . '-jquery-ui-timepicker-i18n-js', 'registered' ) ) ) {
+                wp_register_script( CONTENT_PROTECTOR_SLUG . '-jquery-ui-timepicker-i18n-js', CONTENT_PROTECTOR_PLUGIN_URL . "/js/content-protector-timepicker-i18n.js", array( 'jquery', 'jquery-ui-datepicker', CONTENT_PROTECTOR_SLUG . '-jquery-ui-timepicker-js' ), CONTENT_PROTECTOR_VERSION );
+                wp_enqueue_script( CONTENT_PROTECTOR_SLUG . '-jquery-ui-timepicker-i18n-js' );
+                wp_localize_script( CONTENT_PROTECTOR_SLUG . '-jquery-ui-timepicker-i18n-js', 'ContentProtectorJQTimepickerI18n', $jquery_ui_datetime_timepicker_i18n );
+            }
 
 
             ob_start();
@@ -1020,7 +1308,7 @@ if ( !class_exists("contentProtectorPlugin") ) {
          */
 		function i18nInit() {
 			$plugin_dir = basename( dirname( __FILE__ ) ) . "/lang/";
-			load_plugin_textdomain( CONTENT_PROTECTOR_SLUG, null, $plugin_dir );
+			load_plugin_textdomain( "content-protector", null, $plugin_dir );
 		}
 
 	}

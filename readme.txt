@@ -3,7 +3,7 @@ Contributors: kjvtough
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=5F58ELJ9R3PVL&lc=CA&item_name=Content%20Protector%20Wordpress%20Plugin%20Donation&currency_code=USD&bn=PP%2dDonationsBF%3abtn_donateCC_LG%2egif%3aNonHosted
 Tags: protect, lock, CAPTCHA, password, hide, content, secret, AJAX, cookie, post, page, secure, Contact Form 7
 Requires at least: 2.0.2
-Tested up to: 4.0
+Tested up to: 4.0.1
 Stable tag: 2.1
 License: GPL2
 

@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=5F58E
 Tags: protect, lock, CAPTCHA, password, hide, content, secret, AJAX, cookie, post, page, secure, Contact Form 7
 Requires at least: 2.0.2
 Tested up to: 4.0
-Stable tag: 2.0
+Stable tag: 2.1
 License: GPL2
 
 Plugin to protect content on a Page or Post, where users require a password to access that content.
@@ -53,6 +53,11 @@ Coming soon.  In the meantime, check out the <a href="http://wordpress.org/suppo
 9. A Content Protector access form that uses a CAPTCHA.  You can customize the image under Settings -> Content Protector.
 
 == Changelog ==
+= 2.1 =
+* Rich text editors for form and CAPTCHA instructions.
+* NEW Template/Conditional Tag: `content_protector_is_logged_in()` (See Usage for details)
+* Performance improvements via Transients API
+
 = 2.0 =
 * New CAPTCHA feature! Check out the CAPTCHA tab on Settings -> Content Protector for details.
 * Improved i18n.
@@ -93,6 +98,9 @@ should help in choosing colors that fit in with the active Theme.
 * Initial release.
 
 == Upgrade Notice ==
+= 2.1 =
+New features. Please upgrade.
+
 = 2.0 =
 New features and bug fixes. Please upgrade.
 
@@ -109,12 +117,22 @@ Initial release.
 
 NOTE: The shortcode can be built using the built-in TinyMCE dialog.  When in doubt, use the dialog to create correctly formed shortcodes.
 
-`[content_protector password="{string}" identifier"{string}" cookie_expires="{string|int}" ajax="{true|{string}}"]...[/content_protector]`
+= Shortcode =
+
+`[content_protector password="{string}" identifier="{string}" cookie_expires="{string|int}" ajax="{true|{string}}"]...[/content_protector]`
 
 * `password` - Specifies the password that unlocks the protected content. Upper- and lower-case Latin alphabet letters (A-Z and a-z), numbers (0-9), and "." and "/" only.  Set `password` to "CAPTCHA" to add a CAPTCHA to your access form.
 * `identifier` <em>(Optional)</em> - Used to differentiate between multiple instances of protected content
 * `cookie_expires` <em>(Optional)</em> - If set, put a cookie on the user's computer so the user doesn't need to re-enter the password when revisiting the page.
 * `ajax` <em>(Optional)</em> - Load the protected content using AJAX instead of reloading the page. Set to "true" to activate, but you must also set the `identifier` attribute in order to use this.
+
+= Template/Conditional Tag =
+
+`content_protector_is_logged_in( $password = "", $identifier = "", $post_id = "", $cookie_expires = "" )`
+
+* `$password`, `$cookie_expires`, and `$identifier` are defined the same as their analogous attributes above. `$post_id` is the Post ID.
+* Returns `true` if the user is currently authorized to access the content protected by a Content Protector shortcode matching those parameters.
+* All arguments are <strong>required</strong>.
 
 = Notes =
 
@@ -125,6 +143,7 @@ function to process dates/times, so anything it can understand can be used depen
 2. While the use of `identifier` is optional, you *must* set it if you want to apply custom CSS or use AJAX with a specific access form, or to use Shared Authorization.
 3. While you don't need to set `identifier` if you want to want to set a cookie for specific protected content, editing that content in the future will invalidate any
 cookies set for it (this may actually be desired behaviour, depending on what you're trying to do).
-4. When you set an identifier for protected content, the identifier gets appended onto the existing DOM IDs in its access form.  For example if you set `identifier="Bob"`
+4. Basically, when in doubt, set the `identifier` attribute.  You'll thank yourself later.
+5. When you set an identifier for protected content, the identifier gets appended onto the existing DOM IDs in its access form.  For example if you set `identifier="Bob"`
 in a shortcode, the ID for that form element will be `#content-protector-access-form-Bob`
-5. Any identifiers you set on shortcodes you use in a specific post should be unique to that post (see Note 4).
+6. Any identifiers you set on shortcodes you use in a specific post should be unique to that post (see Note 5).

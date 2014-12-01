@@ -5,12 +5,12 @@ Text Domain: content-protector
 Plugin URI: http://wordpress.org/plugins/content-protector/
 Description: Plugin to password-protect portions of a Page or Post.
 Author: K. Tough
-Version: 2.0
+Version: 2.1
 Author URI: http://wordpress.org/plugins/content-protector/
 */
 if ( !class_exists("contentProtectorPlugin") ) {
 
-    define( "CONTENT_PROTECTOR_VERSION", "2.0" );
+    define( "CONTENT_PROTECTOR_VERSION", "2.1" );
     define( "CONTENT_PROTECTOR_SLUG", "content-protector" );
     define( "CONTENT_PROTECTOR_HANDLE", "content_protector" );
     define( "CONTENT_PROTECTOR_COOKIE_ID", CONTENT_PROTECTOR_HANDLE . "_" );
@@ -206,6 +206,14 @@ if ( !class_exists("contentProtectorPlugin") ) {
          * @return string       The hashed password
          */
         function __hashPassword( $pw = "" ) {
+            if ( false === ( $password_hashes = get_transient( 'content_protector_password_hashes' ) ) ) {
+                // It wasn't there, so regenerate the data and save the transient
+                $password_hashes = array();
+            }
+            $password_hashes_idx = md5( $pw );
+            if ( isset( $password_hashes[$password_hashes_idx] ) )
+                return $password_hashes[$password_hashes_idx];
+
             $encryption_algorithm = get_option( CONTENT_PROTECTOR_HANDLE . "_encryption_algorithm", CONTENT_PROTECTOR_DEFAULT_ENCRYPTION_ALGORITHM );
             $salt = "";
 
@@ -235,8 +243,11 @@ if ( !class_exists("contentProtectorPlugin") ) {
                 default :
                     $salt = "";
             }
+            $password_hash = crypt( $pw, $salt );
+            $password_hashes[$password_hashes_idx] = $password_hash;
+            set_transient( 'content_protector_password_hashes', $password_hashes, 12 * HOUR_IN_SECONDS );
 
-            return crypt( $pw, $salt );
+            return $password_hash;
         }
 
         /**
@@ -252,6 +263,8 @@ if ( !class_exists("contentProtectorPlugin") ) {
             else
                 return;
 
+            $post_permalink = get_permalink( $the_post_id );
+
             if ( ( isset( $_POST['content-protector-submit'] ) )
             && ( isset( $_POST['content-protector-expires'] ) )
             && ( crypt( $_POST['content-protector-password'], $_POST['content-protector-token'] ) == $_POST['content-protector-token'] ) )  {
@@ -261,12 +274,12 @@ if ( !class_exists("contentProtectorPlugin") ) {
                     $expires = time() + (int)$_POST['content-protector-expires'];
 
                 if ( ( isset( $_POST['content-protector-captcha'] ) ) && ( (int)$_POST['content-protector-captcha'] == 1 ) )  {
-                    $cookie_name = CONTENT_PROTECTOR_COOKIE_ID . md5( $_POST['content-protector-ident'] . get_permalink( $the_post_id ) . "_captcha" );
-                    $cookie_val = md5( $_POST['content-protector-expires'] . $_POST['content-protector-ident'] . get_permalink( $the_post_id ) );
+                    $cookie_name = CONTENT_PROTECTOR_COOKIE_ID . md5( $_POST['content-protector-ident'] . $post_permalink . "_captcha" );
+                    $cookie_val = md5( $_POST['content-protector-expires'] . $_POST['content-protector-ident'] . $post_permalink );
                     setcookie( $cookie_name, $cookie_val, $expires, COOKIEPATH, COOKIE_DOMAIN );
                 } else {
-                    $cookie_name = CONTENT_PROTECTOR_COOKIE_ID . md5( $_POST['content-protector-ident'] . get_permalink( $the_post_id ) );
-                    $cookie_val = md5( $_POST['content-protector-password'] . $_POST['content-protector-expires'] . $_POST['content-protector-ident'] . get_permalink( $the_post_id ) );
+                    $cookie_name = CONTENT_PROTECTOR_COOKIE_ID . md5( $_POST['content-protector-ident'] . $post_permalink );
+                    $cookie_val = md5( $_POST['content-protector-password'] . $_POST['content-protector-expires'] . $_POST['content-protector-ident'] . $post_permalink );
                     setcookie( $cookie_name, $cookie_val, $expires, COOKIEPATH, COOKIE_DOMAIN );
                     $share_auth = get_option( CONTENT_PROTECTOR_HANDLE . '_share_auth', array() );
                     if ( !empty( $share_auth ) ) {
@@ -274,7 +287,7 @@ if ( !class_exists("contentProtectorPlugin") ) {
                         if ( ( isset( $share_auth['same_identifier'] ) ) && ( $share_auth['same_identifier'] == "1" ) )
                             $share_auth_cookie_name .= "_" . md5( $_POST['content-protector-ident'] );
                         if ( ( isset( $share_auth['same_page'] ) ) && ( $share_auth['same_page'] == "1" ) )
-                            $share_auth_cookie_name .= "_" . md5( get_permalink( $the_post_id ) );
+                            $share_auth_cookie_name .= "_" . md5( $post_permalink );
                         $share_auth_cookie_expires = time() + get_option( CONTENT_PROTECTOR_HANDLE . '_share_auth_duration', CONTENT_PROTECTOR_DEFAULT_SHARE_AUTH_DURATION );
                         setcookie( $share_auth_cookie_name, md5( $_POST['content-protector-password'] ), $share_auth_cookie_expires, COOKIEPATH, COOKIE_DOMAIN );
                     }
@@ -292,7 +305,7 @@ if ( !class_exists("contentProtectorPlugin") ) {
          */
         function processShortcode( $atts, $content = null ) {
             // Get the ID of the current post
-            global $post; $post_id = $post->ID;
+            global $post; $post_id = $post->ID; $post_permalink = get_permalink( $post_id );
 
             extract( shortcode_atts( array( 'password' => "", 'cookie_expires' => "", 'identifier' => "", 'ajax' => "false" ), $atts ) );
 
@@ -304,28 +317,30 @@ if ( !class_exists("contentProtectorPlugin") ) {
 
             // Password empty; show error message to those who can edit this post, but fail silently
             // otherwise.  Never show protected content.
-            if ( strlen( trim( $password ) ) == 0 )
-                if  ( current_user_can( "edit_post", $post_id ) )
+            if ( strlen( trim( $password ) ) == 0 ) {
+                if ( current_user_can( "edit_post", $post_id ) )
                     return "<div class=\"content-protector-error\">"
-                    . "<p class=\"heading\">" . __( "Error", "content-protector" ) . "</p>"
-                    . "<p>" . sprintf( _x( "No password set in this %s shortcode!", "%s refers to the Content Protector shortcode", "content-protector" ), "<code>[" . CONTENT_PROTECTOR_SHORTCODE . "]</code>" ) . "</p>"
-                    . "<p><em>" . __( "Note: If you can see this message, it means you can edit the post and fix this error.", "content-protector" ) . "</em> :) </p>"
+                    . "<p class=\"heading\">" . __("Error", "content-protector") . "</p>"
+                    . "<p>" . sprintf(_x("No password set in this %s shortcode!", "%s refers to the Content Protector shortcode", "content-protector"), "<code>[" . CONTENT_PROTECTOR_SHORTCODE . "]</code>") . "</p>"
+                    . "<p><em>" . __("Note: If you can see this message, it means you can edit the post and fix this error.", "content-protector") . "</em> :) </p>"
                     . "</div>";
                 else
                     return "";
+            }
 
             // $ajax is true but $identifier empty; show error message to those who can edit this post,
             // but fail silently otherwise.  Never show protected content.
             // (no AJAX allowed unless an identifier is set)
-            if ( ( $ajax ) && ( strlen( trim( $identifier ) ) == 0 ) )
+            if ( ( $ajax ) && ( strlen( trim( $identifier ) ) == 0 ) ) {
                 if ( current_user_can( "edit_post", $post_id ) )
                     return "<div class=\"content-protector-error\">"
-                    . "<p class=\"heading\">" . __( "Error", "content-protector" ) . "</p>"
-                    . "<p>" . sprintf( _x( "No AJAX allowed in this %s shortcode unless an identifier is set!", "%s refers to the Content Protector shortcode", "content-protector" ), "<code>[" . CONTENT_PROTECTOR_SHORTCODE . "]</code>" ) . "</p>"
-                    . "<p><em>" . __( "Note: If you can see this message, it means you can edit the post and fix this error.", "content-protector" ) . "</em> :) </p>"
+                    . "<p class=\"heading\">" . __("Error", "content-protector") . "</p>"
+                    . "<p>" . sprintf(_x("No AJAX allowed in this %s shortcode unless an identifier is set!", "%s refers to the Content Protector shortcode", "content-protector"), "<code>[" . CONTENT_PROTECTOR_SHORTCODE . "]</code>") . "</p>"
+                    . "<p><em>" . __("Note: If you can see this message, it means you can edit the post and fix this error.", "content-protector") . "</em> :) </p>"
                     . "</div>";
                 else
                     return "";
+            }
 
             // We need to differentiate between multiple instances of protected content on a single
             // Post/Page.  If $identifier is set, we'll use that; otherwise, we take a message digest of
@@ -345,26 +360,29 @@ if ( !class_exists("contentProtectorPlugin") ) {
             }
 
             $isAuthorized = false; $successMessage = "";
-            $cookie_name = CONTENT_PROTECTOR_COOKIE_ID . md5( $ident . get_permalink( $post->ID ) );
-            $captcha_cookie_name = CONTENT_PROTECTOR_COOKIE_ID . md5( $ident . get_permalink( $post->ID ) . "_captcha" );
+            $cookie_name = CONTENT_PROTECTOR_COOKIE_ID . md5( $ident . $post_permalink );
+            $captcha_cookie_name = CONTENT_PROTECTOR_COOKIE_ID . md5( $ident . $post_permalink . "_captcha" );
             $share_auth = get_option( CONTENT_PROTECTOR_HANDLE . '_share_auth', array() );
             $share_auth_cookie_name = CONTENT_PROTECTOR_COOKIE_ID . "share_auth";
             if ( !empty( $share_auth ) ) {
                 if ( ( isset( $share_auth['same_identifier'] ) ) && ( $share_auth['same_identifier'] == "1" ) )
                     $share_auth_cookie_name .= "_" . md5( $ident );
                 if ( ( isset( $share_auth['same_page'] ) ) && ( $share_auth['same_page'] == "1" ) )
-                    $share_auth_cookie_name .= "_" . md5( get_permalink( $post->ID ) );
+                    $share_auth_cookie_name .= "_" . md5( $post_permalink );
             }
 
             // Authorization by group cookie
             if ( ( !empty( $share_auth ) ) && ( isset( $_COOKIE[$share_auth_cookie_name] ) ) && ( $_COOKIE[$share_auth_cookie_name] == md5( $password ) ) )
                 $isAuthorized = true;
+
             // ...or authorization by individual cookie
-            elseif ( ( isset( $_COOKIE[$cookie_name] ) ) && ( $_COOKIE[$cookie_name] == md5( $password . $cookie_expires . $ident . get_permalink( $post->ID ) ) ) )
+            elseif ( ( isset( $_COOKIE[$cookie_name] ) ) && ( $_COOKIE[$cookie_name] == md5( $password . $cookie_expires . $ident . $post_permalink ) ) )
                 $isAuthorized = true;
+
             //  ...or authorization by CAPTCHA cookie
-            elseif ( ( $captcha ) && ( isset( $_COOKIE[$captcha_cookie_name] ) ) && ( $_COOKIE[$captcha_cookie_name] == md5( $cookie_expires . $ident . get_permalink( $post->ID ) ) ) )
+            elseif ( ( $captcha ) && ( isset( $_COOKIE[$captcha_cookie_name] ) ) && ( $_COOKIE[$captcha_cookie_name] == md5( $cookie_expires . $ident . $post_permalink ) ) )
                 $isAuthorized = true;
+
             // ...or authorization by $_POST
             elseif ( ( ( isset( $_POST['content-protector-password'] ) ) && ( isset( $_POST['content-protector-token'] ) ) )
                 && ( crypt( $_POST['content-protector-password'], $_POST['content-protector-token'] ) == $_POST['content-protector-token'] )
@@ -381,9 +399,22 @@ if ( !class_exists("contentProtectorPlugin") ) {
             if ( $isAuthorized ) {
                 return "<div id=\"content-protector" . $identifier . "\" class=\"content-protector-access-form\">" . $successMessage . do_shortcode( $content ) . "</div>";
             } else {
-                // Generate random CAPTCHA code if we're setting up a CAPTCHA
-                if ( $captcha ) $password = $this->__generateCaptchaCode( get_option( CONTENT_PROTECTOR_HANDLE . "_captcha_text_length", CONTENT_PROTECTOR_DEFAULT_CAPTCHA_TEXT_LENGTH ) );
+                // Generate random CAPTCHA code/image if we're setting up a CAPTCHA
+                if ( $captcha ) {
+                    $password = $this->__generateCaptchaCode( get_option( CONTENT_PROTECTOR_HANDLE . "_captcha_text_length", CONTENT_PROTECTOR_DEFAULT_CAPTCHA_TEXT_LENGTH ) );
+                    $captcha_data_uri = $this->__generateCaptchaDataUri( $password );
+                } else
+                    $captcha_data_uri = "";
                 $captcha_instr_mode = get_option( CONTENT_PROTECTOR_HANDLE . "_captcha_instructions_display", "1" );
+                $incorrect_password_message = get_option( CONTENT_PROTECTOR_HANDLE . '_error_message', CONTENT_PROTECTOR_DEFAULT_ERROR_MESSAGE );
+                $form_instructions = apply_filters( "the_content", get_option( CONTENT_PROTECTOR_HANDLE . '_form_instructions', CONTENT_PROTECTOR_DEFAULT_FORM_INSTRUCTIONS ) );
+                $captcha_instructions = apply_filters( "the_content", get_option( CONTENT_PROTECTOR_HANDLE . '_captcha_instructions', CONTENT_PROTECTOR_DEFAULT_CAPTCHA_INSTRUCTIONS ) );
+                $form_submit_label = get_option( CONTENT_PROTECTOR_HANDLE . '_form_submit_label', CONTENT_PROTECTOR_DEFAULT_FORM_SUBMIT_LABEL );
+                $password_hash = $this->__hashPassword( $password );
+                if ( $ajax )
+                    $ajax_security_nonce = wp_create_nonce( "view_" . CONTENT_PROTECTOR_HANDLE . "_" . $post_id . $identifier );
+                else
+                    $ajax_security_nonce = "";
                 ob_start();
                 include("screens/access_form.php");
                 $the_form = ob_get_contents();
@@ -463,6 +494,15 @@ if ( !class_exists("contentProtectorPlugin") ) {
                                     // Generate random CAPTCHA code if we're setting up a CAPTCHA
                                     if ( $captcha ) $password = $this->__generateCaptchaCode( get_option( CONTENT_PROTECTOR_HANDLE . "_captcha_text_length", CONTENT_PROTECTOR_DEFAULT_CAPTCHA_TEXT_LENGTH ) );
                                     $captcha_instr_mode = get_option( CONTENT_PROTECTOR_HANDLE . "_captcha_instructions_display", "1" );
+                                    $incorrect_password_message = get_option( CONTENT_PROTECTOR_HANDLE . '_error_message', CONTENT_PROTECTOR_DEFAULT_ERROR_MESSAGE );
+                                    $form_instructions = apply_filters( "the_content", get_option( CONTENT_PROTECTOR_HANDLE . '_form_instructions', CONTENT_PROTECTOR_DEFAULT_FORM_INSTRUCTIONS ) );
+                                    $captcha_instructions = apply_filters( "the_content", get_option( CONTENT_PROTECTOR_HANDLE . '_captcha_instructions', CONTENT_PROTECTOR_DEFAULT_CAPTCHA_INSTRUCTIONS ) );
+                                    $form_submit_label = get_option( CONTENT_PROTECTOR_HANDLE . '_form_submit_label', CONTENT_PROTECTOR_DEFAULT_FORM_SUBMIT_LABEL );
+                                    $password_hash = $this->__hashPassword( $attributes['password'] );
+                                    if ( $ajax )
+                                        $ajax_security_nonce = wp_create_nonce( "view_" . CONTENT_PROTECTOR_HANDLE . "_" . $post_id . $identifier );
+                                    else
+                                        $ajax_security_nonce = "";
                                     ob_start();
                                     include("screens/access_form.php");
                                     $the_form = ob_get_contents();
@@ -653,7 +693,7 @@ if ( !class_exists("contentProtectorPlugin") ) {
             add_settings_field( CONTENT_PROTECTOR_HANDLE . '_form_instructions_font_size', __( 'Font Size', "content-protector" ), array( &$this, '__formInstructionsFontSizeFieldCallback' ), CONTENT_PROTECTOR_HANDLE . '_form_instructions_settings_subpage', CONTENT_PROTECTOR_HANDLE . '_form_instructions_settings_section' );
             add_settings_field( CONTENT_PROTECTOR_HANDLE . '_form_instructions_color', __( 'Text Color', "content-protector" ), array( &$this, '__formInstructionsColorFieldCallback' ), CONTENT_PROTECTOR_HANDLE . '_form_instructions_settings_subpage', CONTENT_PROTECTOR_HANDLE . '_form_instructions_settings_section' );
             // Register our setting so that $_POST handling is done for us and our callback function just has to echo the HTML
-            register_setting( CONTENT_PROTECTOR_HANDLE . '_form_instructions_settings_group', CONTENT_PROTECTOR_HANDLE . '_form_instructions', 'esc_textarea' );
+            register_setting( CONTENT_PROTECTOR_HANDLE . '_form_instructions_settings_group', CONTENT_PROTECTOR_HANDLE . '_form_instructions', '' );
             register_setting( CONTENT_PROTECTOR_HANDLE . '_form_instructions_settings_group', CONTENT_PROTECTOR_HANDLE . '_form_instructions_font_weight', 'esc_attr' );
             register_setting( CONTENT_PROTECTOR_HANDLE . '_form_instructions_settings_group', CONTENT_PROTECTOR_HANDLE . '_form_instructions_font_size', 'esc_attr' );
             register_setting( CONTENT_PROTECTOR_HANDLE . '_form_instructions_settings_group', CONTENT_PROTECTOR_HANDLE . '_form_instructions_color', 'esc_attr' );
@@ -720,7 +760,7 @@ if ( !class_exists("contentProtectorPlugin") ) {
             add_settings_field( CONTENT_PROTECTOR_HANDLE . '_captcha_text_color', __( 'Image Text Color', "content-protector" ), array( &$this, '__captchaTextColorFieldCallback' ), CONTENT_PROTECTOR_HANDLE . '_captcha_settings_subpage', CONTENT_PROTECTOR_HANDLE . '_captcha_settings_section' );
             add_settings_field( CONTENT_PROTECTOR_HANDLE . '_captcha_noise_color', __( 'Image Noise Color', "content-protector" ), array( &$this, '__captchaNoiseColorFieldCallback' ), CONTENT_PROTECTOR_HANDLE . '_captcha_settings_subpage', CONTENT_PROTECTOR_HANDLE . '_captcha_settings_section' );
             // Register our setting so that $_POST handling is done for us and our callback function just has to echo the HTML
-            register_setting( CONTENT_PROTECTOR_HANDLE . '_captcha_settings_group', CONTENT_PROTECTOR_HANDLE . '_captcha_instructions', 'esc_textarea' );
+            register_setting( CONTENT_PROTECTOR_HANDLE . '_captcha_settings_group', CONTENT_PROTECTOR_HANDLE . '_captcha_instructions', '' );
             register_setting( CONTENT_PROTECTOR_HANDLE . '_captcha_settings_group', CONTENT_PROTECTOR_HANDLE . '_captcha_instructions_display', 'intval' );
             register_setting( CONTENT_PROTECTOR_HANDLE . '_captcha_settings_group', CONTENT_PROTECTOR_HANDLE . '_captcha_width', 'intval' );
             register_setting( CONTENT_PROTECTOR_HANDLE . '_captcha_settings_group', CONTENT_PROTECTOR_HANDLE . '_captcha_height', 'intval' );
@@ -756,7 +796,8 @@ if ( !class_exists("contentProtectorPlugin") ) {
         }
 
         function __formInstructionsFieldCallback() {
-            echo '<textarea style="vertical-align: top;" rows="4" cols="70" class="regular-text" name="' . CONTENT_PROTECTOR_HANDLE . '_form_instructions' . '" id="' . CONTENT_PROTECTOR_HANDLE . '_form_instructions' . '">' . get_option( CONTENT_PROTECTOR_HANDLE . '_form_instructions', CONTENT_PROTECTOR_DEFAULT_FORM_INSTRUCTIONS ) . '</textarea>';
+            $editor_settings = array( "textarea_rows" => "4" );
+            wp_editor( get_option( CONTENT_PROTECTOR_HANDLE . '_form_instructions', CONTENT_PROTECTOR_DEFAULT_FORM_INSTRUCTIONS ), CONTENT_PROTECTOR_HANDLE . '_form_instructions', $editor_settings );
             echo "&nbsp;<a href=\"javascript:;\" id=\"form-instructions-reset\">" . __( "Reset To Default", "content-protector" ) . "</a>";
             echo "<div style=\"clear: both;\"></div>";
             echo __( "Instructions for your access form.", "content-protector" );
@@ -965,7 +1006,8 @@ if ( !class_exists("contentProtectorPlugin") ) {
         }
 
         function __captchaInstructionsFieldCallback() {
-            echo '<textarea style="vertical-align: top;" rows="4" cols="70" class="regular-text" name="' . CONTENT_PROTECTOR_HANDLE . '_captcha_instructions' . '" id="' . CONTENT_PROTECTOR_HANDLE . '_captcha_instructions' . '">' . get_option( CONTENT_PROTECTOR_HANDLE . '_captcha_instructions', CONTENT_PROTECTOR_DEFAULT_CAPTCHA_INSTRUCTIONS ) . '</textarea>';
+            $editor_settings = array( "textarea_rows" => "4" );
+            wp_editor( get_option( CONTENT_PROTECTOR_HANDLE . '_captcha_instructions', CONTENT_PROTECTOR_DEFAULT_CAPTCHA_INSTRUCTIONS ), CONTENT_PROTECTOR_HANDLE . '_captcha_instructions', $editor_settings );
             echo "&nbsp;<a href=\"javascript:;\" id=\"captcha-instructions-reset\">" . __( "Reset To Default", "content-protector" ) . "</a>";
             echo "<div style=\"clear: both;\"></div>";
             echo __( "Instructions for filling in the CAPTCHA.", "content-protector" );
@@ -1311,9 +1353,40 @@ if ( !class_exists("contentProtectorPlugin") ) {
 			load_plugin_textdomain( "content-protector", null, $plugin_dir );
 		}
 
-	}
+        function clearOutPasswordHashesTransients( $option, $old_value, $value ) {
+            if ( $option == CONTENT_PROTECTOR_HANDLE . "_encryption_algorithm" )
+                if ( $old_value != $value )
+                    delete_transient( 'content_protector_password_hashes' );
+        }
 
-} //End Class contentProtectorPlugin
+	}
+	//End Class contentProtectorPlugin
+
+    function content_protector_is_logged_in( $password = "", $identifier = "", $post_id = "", $cookie_expires = "" ) {
+        if ( trim( $password ) == "" || trim( $identifier ) == "" || trim( $post_id == "" ) )
+            return false;
+
+        $ident = md5( $identifier );
+        $post_permalink = get_permalink( $post_id );
+
+        $captcha = ( strtoupper( $password ) === CONTENT_PROTECTOR_CAPTCHA_KEYWORD ? true : false );
+
+        // Cookies from CAPTCHA protected content are built differently from cookies from password protected content
+        if ( !$captcha ) {
+            $cookie_name = CONTENT_PROTECTOR_COOKIE_ID . md5( $ident . $post_permalink );
+            $is_live_cookie = ( ( isset( $_COOKIE[$cookie_name] ) ) && ( $_COOKIE[$cookie_name] == md5( $password . $cookie_expires . $ident . $post_permalink ) ) );
+        } else {
+            $cookie_name = CONTENT_PROTECTOR_COOKIE_ID . md5( $ident . $post_permalink . "_captcha" );
+            $is_live_cookie = ( ( isset( $_COOKIE[$cookie_name] ) ) && ( $_COOKIE[$cookie_name] == md5( $cookie_expires . $ident . $post_permalink ) ) );
+        }
+
+        return ( $is_live_cookie ||
+                ( ( ( isset( $_POST['content-protector-password'] ) ) && ( isset( $_POST['content-protector-token'] ) ) )
+                && ( crypt( $_POST['content-protector-password'], $_POST['content-protector-token'] ) == $_POST['content-protector-token'] )
+                && ( ( isset( $_POST['content-protector-ident'] ) ) && ( $_POST['content-protector-ident'] === $ident ) ) ) );
+    }
+
+}
 
 // Initialize plugin
 if ( class_exists("contentProtectorPlugin") ) {
@@ -1332,6 +1405,7 @@ if ( isset( $contentProtectorPluginInstance ) ) {
     add_action( 'wp_ajax_contentProtectorProcessFormAjax', array( &$contentProtectorPluginInstance, "contentProtectorProcessFormAjax" ), 1 );
     add_action( 'wp_ajax_nopriv_contentProtectorProcessFormAjax', array( &$contentProtectorPluginInstance, "contentProtectorProcessFormAjax" ), 1 );
     add_action( 'wp_ajax_contentProtectorPluginGetTinyMCEDialog', array( &$contentProtectorPluginInstance, "contentProtectorPluginGetTinyMCEDialog" ), 1 );
+    add_action( 'updated_option', array( &$contentProtectorPluginInstance, "clearOutPasswordHashesTransients" ), 10, 3 );
 	add_shortcode( CONTENT_PROTECTOR_SHORTCODE, array( &$contentProtectorPluginInstance, "processShortcode" ), 1 );
 }
 ?>

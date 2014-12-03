@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=5F58E
 Tags: protect, lock, CAPTCHA, password, hide, content, secret, AJAX, cookie, post, page, secure, Contact Form 7
 Requires at least: 2.0.2
 Tested up to: 4.0.1
-Stable tag: 2.1
+Stable tag: 2.1.1
 License: GPL2
 
 Plugin to protect content on a Page or Post, where users require a password to access that content.
@@ -53,10 +53,13 @@ Coming soon.  In the meantime, check out the <a href="http://wordpress.org/suppo
 9. A Content Protector access form that uses a CAPTCHA.  You can customize the image under Settings -> Content Protector.
 
 == Changelog ==
+= 2.1.1 =
+* Added custom filter `content_protector_content` to emulate `apply_filter( 'the_content', ... )` functionality for form and CAPTCHA instructions.
+
 = 2.1 =
 * Rich text editors for form and CAPTCHA instructions.
-* NEW Template/Conditional Tag: `content_protector_is_logged_in()` (See Usage for details)
-* Performance improvements via Transients API
+* NEW Template/Conditional Tag: `content_protector_is_logged_in()` (See Usage for details).
+* Performance improvements via Transients API.
 
 = 2.0 =
 * New CAPTCHA feature! Check out the CAPTCHA tab on Settings -> Content Protector for details.
@@ -71,8 +74,8 @@ Coming soon.  In the meantime, check out the <a href="http://wordpress.org/suppo
 * Added "Display Success Message" option.
 
 = 1.3 =
-* Added "Shared Authorization" feature
-* Renamed "Password Settings" to "General Settings"
+* Added "Shared Authorization" feature.
+* Renamed "Password Settings" to "General Settings".
 
 = 1.2.2 =
 * Added support for Contact Form 7 when using AJAX.
@@ -98,6 +101,9 @@ should help in choosing colors that fit in with the active Theme.
 * Initial release.
 
 == Upgrade Notice ==
+= 2.1.1 =
+Added custom filter `content_protector_content` to emulate `apply_filter( 'the_content', ... )` functionality for form and CAPTCHA instructions. Please upgrade.
+
 = 2.1 =
 New features. Please upgrade.
 

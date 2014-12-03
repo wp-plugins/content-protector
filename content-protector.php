@@ -5,12 +5,12 @@ Text Domain: content-protector
 Plugin URI: http://wordpress.org/plugins/content-protector/
 Description: Plugin to password-protect portions of a Page or Post.
 Author: K. Tough
-Version: 2.1
+Version: 2.1.1
 Author URI: http://wordpress.org/plugins/content-protector/
 */
 if ( !class_exists("contentProtectorPlugin") ) {
 
-    define( "CONTENT_PROTECTOR_VERSION", "2.1" );
+    define( "CONTENT_PROTECTOR_VERSION", "2.1.1" );
     define( "CONTENT_PROTECTOR_SLUG", "content-protector" );
     define( "CONTENT_PROTECTOR_HANDLE", "content_protector" );
     define( "CONTENT_PROTECTOR_COOKIE_ID", CONTENT_PROTECTOR_HANDLE . "_" );
@@ -400,6 +400,7 @@ if ( !class_exists("contentProtectorPlugin") ) {
                 return "<div id=\"content-protector" . $identifier . "\" class=\"content-protector-access-form\">" . $successMessage . do_shortcode( $content ) . "</div>";
             } else {
                 // Generate random CAPTCHA code/image if we're setting up a CAPTCHA
+                //error_log( "Building form. ");
                 if ( $captcha ) {
                     $password = $this->__generateCaptchaCode( get_option( CONTENT_PROTECTOR_HANDLE . "_captcha_text_length", CONTENT_PROTECTOR_DEFAULT_CAPTCHA_TEXT_LENGTH ) );
                     $captcha_data_uri = $this->__generateCaptchaDataUri( $password );
@@ -407,8 +408,12 @@ if ( !class_exists("contentProtectorPlugin") ) {
                     $captcha_data_uri = "";
                 $captcha_instr_mode = get_option( CONTENT_PROTECTOR_HANDLE . "_captcha_instructions_display", "1" );
                 $incorrect_password_message = get_option( CONTENT_PROTECTOR_HANDLE . '_error_message', CONTENT_PROTECTOR_DEFAULT_ERROR_MESSAGE );
-                $form_instructions = apply_filters( "the_content", get_option( CONTENT_PROTECTOR_HANDLE . '_form_instructions', CONTENT_PROTECTOR_DEFAULT_FORM_INSTRUCTIONS ) );
-                $captcha_instructions = apply_filters( "the_content", get_option( CONTENT_PROTECTOR_HANDLE . '_captcha_instructions', CONTENT_PROTECTOR_DEFAULT_CAPTCHA_INSTRUCTIONS ) );
+
+                $form_instructions = apply_filters("content_protector_content", get_option(CONTENT_PROTECTOR_HANDLE . '_form_instructions', CONTENT_PROTECTOR_DEFAULT_FORM_INSTRUCTIONS));
+                $captcha_instructions = apply_filters("content_protector_content", get_option(CONTENT_PROTECTOR_HANDLE . '_captcha_instructions', CONTENT_PROTECTOR_DEFAULT_CAPTCHA_INSTRUCTIONS));
+                $form_instructions = str_replace(']]>', ']]&gt;', $form_instructions);
+                $captcha_instructions = str_replace(']]>', ']]&gt;', $captcha_instructions);
+
                 $form_submit_label = get_option( CONTENT_PROTECTOR_HANDLE . '_form_submit_label', CONTENT_PROTECTOR_DEFAULT_FORM_SUBMIT_LABEL );
                 $password_hash = $this->__hashPassword( $password );
                 if ( $ajax )
@@ -1395,6 +1400,13 @@ if ( class_exists("contentProtectorPlugin") ) {
 
 // Actions and Filters
 if ( isset( $contentProtectorPluginInstance ) ) {
+    add_filter('content_protector_content', 'wptexturize');
+    add_filter('content_protector_content', 'convert_smilies');
+    add_filter('content_protector_content', 'convert_chars');
+    add_filter('content_protector_content', 'wpautop');
+    add_filter('content_protector_content', 'prepend_attachment');
+    add_filter('content_protector_content', 'do_shortcode');
+
     add_action( "init", array( &$contentProtectorPluginInstance, "i18nInit" ), 1 );
     add_action( "wp", array( &$contentProtectorPluginInstance, "setCookie" ), 1 );
 	add_action( "wp_head", array( &$contentProtectorPluginInstance, "addHeaderCode" ), 99 );

@@ -488,7 +488,7 @@ if ( !class_exists("contentProtectorPlugin") ) {
                                         $successMessage = "<div id=\"content-protector-correct-password" . $identifier . "\" class=\"content-protector-correct-password\">" . get_option( CONTENT_PROTECTOR_HANDLE . '_success_message', CONTENT_PROTECTOR_DEFAULT_SUCCESS_MESSAGE ) . "</div>";
                                     else
                                         $successMessage = "";
-                                    $response = $successMessage .  apply_filters( 'the_content', $match[5] );
+                                    $response = $successMessage .  apply_filters( 'content_protector_content', $match[5] );
 
                                     // response output
                                     header( "Content-Type: text/plain" );
@@ -500,8 +500,10 @@ if ( !class_exists("contentProtectorPlugin") ) {
                                     if ( $captcha ) $password = $this->__generateCaptchaCode( get_option( CONTENT_PROTECTOR_HANDLE . "_captcha_text_length", CONTENT_PROTECTOR_DEFAULT_CAPTCHA_TEXT_LENGTH ) );
                                     $captcha_instr_mode = get_option( CONTENT_PROTECTOR_HANDLE . "_captcha_instructions_display", "1" );
                                     $incorrect_password_message = get_option( CONTENT_PROTECTOR_HANDLE . '_error_message', CONTENT_PROTECTOR_DEFAULT_ERROR_MESSAGE );
-                                    $form_instructions = apply_filters( "the_content", get_option( CONTENT_PROTECTOR_HANDLE . '_form_instructions', CONTENT_PROTECTOR_DEFAULT_FORM_INSTRUCTIONS ) );
-                                    $captcha_instructions = apply_filters( "the_content", get_option( CONTENT_PROTECTOR_HANDLE . '_captcha_instructions', CONTENT_PROTECTOR_DEFAULT_CAPTCHA_INSTRUCTIONS ) );
+                                    $form_instructions = apply_filters( "content_protector_content", get_option( CONTENT_PROTECTOR_HANDLE . '_form_instructions', CONTENT_PROTECTOR_DEFAULT_FORM_INSTRUCTIONS ) );
+                                    $captcha_instructions = apply_filters( "content_protector_content", get_option( CONTENT_PROTECTOR_HANDLE . '_captcha_instructions', CONTENT_PROTECTOR_DEFAULT_CAPTCHA_INSTRUCTIONS ) );
+                                    $form_instructions = str_replace(']]>', ']]&gt;', $form_instructions);
+                                    $captcha_instructions = str_replace(']]>', ']]&gt;', $captcha_instructions);
                                     $form_submit_label = get_option( CONTENT_PROTECTOR_HANDLE . '_form_submit_label', CONTENT_PROTECTOR_DEFAULT_FORM_SUBMIT_LABEL );
                                     $password_hash = $this->__hashPassword( $attributes['password'] );
                                     if ( $ajax )

@@ -5,12 +5,12 @@ Text Domain: content-protector
 Plugin URI: http://wordpress.org/plugins/content-protector/
 Description: Plugin to password-protect portions of a Page or Post.
 Author: K. Tough
-Version: 2.1.1
+Version: 2.2
 Author URI: http://wordpress.org/plugins/content-protector/
 */
 if ( !class_exists("contentProtectorPlugin") ) {
 
-    define( "CONTENT_PROTECTOR_VERSION", "2.1.1" );
+    define( "CONTENT_PROTECTOR_VERSION", "2.2" );
     define( "CONTENT_PROTECTOR_SLUG", "content-protector" );
     define( "CONTENT_PROTECTOR_HANDLE", "content_protector" );
     define( "CONTENT_PROTECTOR_COOKIE_ID", CONTENT_PROTECTOR_HANDLE . "_" );
@@ -1269,9 +1269,8 @@ if ( !class_exists("contentProtectorPlugin") ) {
                     $image = "/lock.gif";
                 else
                     $image = "";
-                wp_enqueue_script( CONTENT_PROTECTOR_SLUG . '-admin_tinymce_js', CONTENT_PROTECTOR_PLUGIN_URL . '/js/content-protector-admin-tinymce.js', array(), CONTENT_PROTECTOR_VERSION );
-                wp_localize_script( CONTENT_PROTECTOR_SLUG . '-admin_tinymce_js',
-                    'contentProtectorAdminTinyMCEOptionsVars',
+                wp_localize_script( 'editor',
+                    'contentProtectorAdminTinyMCEOptions',
                     array( 'version' => CONTENT_PROTECTOR_VERSION,
                         'handle' => CONTENT_PROTECTOR_HANDLE,
                         'desc' => __( "Add Content Protector shortcode", "content-protector" ),

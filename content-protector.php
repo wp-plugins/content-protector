@@ -5,12 +5,12 @@ Text Domain: content-protector
 Plugin URI: http://wordpress.org/plugins/content-protector/
 Description: Plugin to password-protect portions of a Page or Post.
 Author: K. Tough
-Version: 2.2
+Version: 2.2.1
 Author URI: http://wordpress.org/plugins/content-protector/
 */
 if ( !class_exists("contentProtectorPlugin") ) {
 
-    define( "CONTENT_PROTECTOR_VERSION", "2.2" );
+    define( "CONTENT_PROTECTOR_VERSION", "2.2.1" );
     define( "CONTENT_PROTECTOR_SLUG", "content-protector" );
     define( "CONTENT_PROTECTOR_HANDLE", "content_protector" );
     define( "CONTENT_PROTECTOR_COOKIE_ID", CONTENT_PROTECTOR_HANDLE . "_" );
@@ -446,15 +446,22 @@ if ( !class_exists("contentProtectorPlugin") ) {
             $post = get_post( $_POST['post_id'] ); $post_id = $_POST['post_id'];
 
             // Find all instances of [content_protector] in the post
-            $regex_pattern = get_shortcode_regex();
+            //$regex_pattern = get_shortcode_regex();
+            $regex_pattern = "\[(\[?)(" . CONTENT_PROTECTOR_SHORTCODE . ")(?![\w-])([^\]\/]*(?:\/(?!\])[^\]\/]*)*?)(?:(\/)\]|\](?:([^\[]*+(?:\[(?!\/\\2\])[^\[]*+)*+)\[\/\\2\])?)(\]?)";
+            //if ( preg_match_all( '/' . CONTENT_PROTECTOR_SHORTCODE . '/s', $post->post_content, $matches, PREG_SET_ORDER ) ) {
             if ( preg_match_all( '/' . $regex_pattern . '/s', $post->post_content, $matches, PREG_SET_ORDER ) ) {
+                error_log($regex_pattern);
+                error_log($post->post_content);
+                error_log(print_r($matches,true));
                 foreach ( $matches as $match ) {
-                    if ( array_key_exists( 2, $match ) && ( CONTENT_PROTECTOR_SHORTCODE == $match[2] ) ) {
+                    //if ( array_key_exists( 2, $match ) && ( CONTENT_PROTECTOR_SHORTCODE == $match[2] ) ) {
                         // Got one!  But is it the one we want? Let's check the attributes, which
                         // should be in $match[3].
                         // response output
-                        if ( array_key_exists( 3, $match ) ) {
+                        error_log(print_r($match,true));
+                        //if ( array_key_exists( 3, $match ) ) {
                             $attributes = shortcode_parse_atts( $match[3] );
+                            error_log(print_r($attributes,true));
                             $ajax = ( ( ( isset( $attributes['ajax'] ) ) && ( $attributes['ajax'] === "true" ) ) ? true : false );
 
                             // If $ajax isn't explicitly set to 'true', keep looking at other shortcodes
@@ -493,7 +500,7 @@ if ( !class_exists("contentProtectorPlugin") ) {
                                     // response output
                                     header( "Content-Type: text/plain" );
                                     echo $response;
-                                    die();
+                                    wp_die();
                                 } else {
                                     $is_ajax_processed = true;
                                     // Generate random CAPTCHA code if we're setting up a CAPTCHA
@@ -518,16 +525,16 @@ if ( !class_exists("contentProtectorPlugin") ) {
                                     // response output
                                     header( "Content-Type: text/plain" );
                                     echo $the_form;
-                                    die();
+                                    wp_die();
                                 }
                             }
-                        }
-                    }
+                        //}
+                    //}
                 }
             }
-            $response = "<div id=\"content-protector-incorrect-password" . $identifier . "\" class=\"content-protector-incorrect-password\">"
-                /* translators: %1$s refers to the 'identifier' attribute; %2$s refers to the Content Protector shortcode. */
-                . __( 'Something has gone wrong.  Did you remember to set the %1$s attribute in your %2$s shortcode?', "<code>identifier</code>", "<code>[content_protector]</code>" )
+            $response = "<div id=\"content-protector-unknown-error\" class=\"content-protector-incorrect-password\">"
+                /* translators: %1$s refers to the plugin name. */
+                . sprintf( __( 'Something unusual has happened.  %1$s cannot find your shortcode in this Post.', 'content-protector' ), __( "Content Protector", 'content-protector' ) )
                 . "</div>";
 
             // response output

@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=5F58E
 Tags: protect, lock, CAPTCHA, password, hide, content, secret, AJAX, cookie, post, page, secure, Contact Form 7
 Requires at least: 2.0.2
 Tested up to: 4.1
-Stable tag: 2.2
+Stable tag: 2.2.1
 License: GPL2
 
 Plugin to protect content on a Page or Post, where users require a password to access that content.
@@ -53,6 +53,11 @@ Coming soon.  In the meantime, check out the <a href="http://wordpress.org/suppo
 9. A Content Protector access form that uses a CAPTCHA.  You can customize the image under Settings -> Content Protector.
 
 == Changelog ==
+= 2.2.1 =
+* Fixed AJAX bug where shortcode couldn't be found if already enclosed in another shortcode.
+* Clarified error message if AJAX method cannot find shortcode.
+* Changed calls from `die()` to `wp_die()`.
+
 = 2.2 =
 * Removed `content-protector-admin-tinymce.js` (No need anymore; required JS variables now hooked directly into editor). Fixes incompatibility with OptimizePress.
 

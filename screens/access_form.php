@@ -1,5 +1,5 @@
 <?php if (!isset($is_ajax_processed)) { ?><div id="content-protector<?php echo $identifier; ?>" class="content-protector-access-form"><?php } ?>
-    <form id="content-protector-access-form<?php echo $identifier; ?>" method="post" action="">
+    <form id="content-protector-access-form<?php echo $identifier; ?>" method="post" action="" autocomplete="off">
         <?php
         // Error message on unsuccessful attempt. Check $_POST['content-protector-ident'] to make sure
         // we're showing the error message on the right Content Protector access form
@@ -24,7 +24,7 @@
                    type="hidden" value="1"/>
         <?php } ?>
         <input name="content-protector-password" id="content-protector-password<?php echo $identifier; ?>"
-               class="content-protector-password" type="password" value=""/>
+               class="content-protector-password" type="<?php echo $password_field_type; ?>" placeholder="<?php echo $placeholder; ?>" value=""/>
         <?php if (strlen(trim($cookie_expires)) > 0) { ?>
             <input name="content-protector-expires" id="content-protector-expires<?php echo $identifier; ?>"
                    type="hidden" value="<?php echo $cookie_expires; ?>"/>

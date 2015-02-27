@@ -11,6 +11,7 @@
             <li class="ui-state-default ui-corner-top"><a href="#content-protector-tabs-form-submit"><?php _e( "Form Submit Label", "content-protector" ); ?></a></li>
             <li class="ui-state-default ui-corner-top"><a href="#content-protector-tabs-captcha"><?php _e( "CAPTCHA", "content-protector" ); ?></a></li>
             <li class="ui-state-default ui-corner-top"><a href="#content-protector-tabs-form-css"><?php _e( "Form CSS", "content-protector" ); ?></a></li>
+            <li class="ui-state-default ui-corner-top"><a href="#content-protector-tabs-password"><?php _e( "Password/CAPTCHA Field", "content-protector" ); ?></a></li>
         </ul>
         <div id="content-protector-tabs-gen" class="ui-tabs-panel ui-widget-content ui-corner-bottom">
             <form action="options.php" method="post">
@@ -65,6 +66,13 @@
             <form action="options.php" method="post">
                 <?php settings_fields( CONTENT_PROTECTOR_HANDLE . '_form_css_settings_group' ); ?>
                 <?php do_settings_sections( CONTENT_PROTECTOR_HANDLE . '_form_css_settings_subpage' ); ?>
+                <input class="button-primary" name="Submit" id="Submit" type="submit" value="<?php _e( "Save Settings", "content-protector" ); ?>" />
+            </form>
+        </div>
+        <div id="content-protector-tabs-password" class="ui-tabs-panel ui-widget-content ui-corner-bottom" style="display: none;">
+            <form action="options.php" method="post">
+                <?php settings_fields( CONTENT_PROTECTOR_HANDLE . '_password_settings_group' ); ?>
+                <?php do_settings_sections( CONTENT_PROTECTOR_HANDLE . '_password_settings_subpage' ); ?>
                 <input class="button-primary" name="Submit" id="Submit" type="submit" value="<?php _e( "Save Settings", "content-protector" ); ?>" />
             </form>
         </div>

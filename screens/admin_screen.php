@@ -8,7 +8,7 @@
             <li class="ui-state-default ui-corner-top"><a href="#content-protector-tabs-ajax"><?php _e( "AJAX Loading Message", "content-protector" ); ?></a></li>
             <li class="ui-state-default ui-corner-top"><a href="#content-protector-tabs-success"><?php _e( "Success Message", "content-protector" ); ?></a></li>
             <li class="ui-state-default ui-corner-top"><a href="#content-protector-tabs-error"><?php _e( "Error Message", "content-protector" ); ?></a></li>
-            <li class="ui-state-default ui-corner-top"><a href="#content-protector-tabs-form-submit"><?php _e( "Form Submit Label", "content-protector" ); ?></a></li>
+            <li class="ui-state-default ui-corner-top"><a href="#content-protector-tabs-form-submit"><?php _e( "Form Submit Button", "content-protector" ); ?></a></li>
             <li class="ui-state-default ui-corner-top"><a href="#content-protector-tabs-captcha"><?php _e( "CAPTCHA", "content-protector" ); ?></a></li>
             <li class="ui-state-default ui-corner-top"><a href="#content-protector-tabs-form-css"><?php _e( "Form CSS", "content-protector" ); ?></a></li>
             <li class="ui-state-default ui-corner-top"><a href="#content-protector-tabs-password"><?php _e( "Password/CAPTCHA Field", "content-protector" ); ?></a></li>

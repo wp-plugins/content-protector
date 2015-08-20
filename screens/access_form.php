@@ -24,7 +24,8 @@
                    type="hidden" value="1"/>
         <?php } ?>
         <input name="content-protector-password" id="content-protector-password<?php echo $identifier; ?>"
-               class="content-protector-password" type="<?php echo $password_field_type; ?>" placeholder="<?php echo $placeholder; ?>" value=""/>
+               class="content-protector-password" type="<?php echo $password_field_type; ?>" placeholder="<?php echo $placeholder; ?>"
+               value="" size="<?php echo $password_field_length; ?>" maxlength="<?php echo $password_field_length; ?>"/>
         <?php if (strlen(trim($cookie_expires)) > 0) { ?>
             <input name="content-protector-expires" id="content-protector-expires<?php echo $identifier; ?>"
                    type="hidden" value="<?php echo $cookie_expires; ?>"/>
@@ -38,24 +39,17 @@
                value="<?php echo $form_submit_label; ?>"/>
     </form>
 <?php if (!isset($is_ajax_processed)) { ?></div><?php } ?>
-<?php if ($ajax) { ?>
+<?php if (isset($is_ajax_processed) && ($is_ajax_processed)) { ?>
     <script type="text/javascript">
         jQuery(document).ready(function () {
-            jQuery("#content-protector-access-form<?php echo $identifier; ?>").ajaxForm(
-                {
-                    target: "#content-protector<?php echo $identifier; ?>",
-                    data: {
-                        post_id: "<?php echo $post_id; ?>",
-                        identifier: "<?php echo $identifier; ?>",
-                        ajax_security: "<?php echo $ajax_security_nonce; ?>",
-                        action: "contentProtectorProcessFormAjax"
-                    },
-                    url: contentProtectorAjax.ajaxurl,
-                    beforeSubmit: contentProtectorBeforeSubmit,
-                    success: contentProtectorSuccess,
-                    error: contentProtectorError
-                }
-            );
+            var form =  {
+                form_id: "#content-protector-access-form<?php echo $identifier; ?>",
+                target: "#content-protector<?php echo $identifier; ?>",
+                post_id: "<?php echo $post_id; ?>",
+                identifier: "<?php echo $identifier; ?>",
+                ajax_security: "<?php echo $ajax_security_nonce; ?>"
+            };
+            setupAjaxForm(form);
         });
     </script>
 <?php } ?>

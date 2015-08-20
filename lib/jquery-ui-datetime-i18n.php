@@ -1,29 +1,35 @@
 <?php
 global $wp_locale;
 
-function strip_array_indices( $ArrayToStrip ) {
-    foreach( $ArrayToStrip as $objArrayItem) {
-        $NewArray[] =  $objArrayItem;
-    }
+if (!function_exists("ca_aliencyborg_strip_array_indices")) {
+    function ca_aliencyborg_strip_array_indices($ArrayToStrip)
+    {
+        foreach ($ArrayToStrip as $objArrayItem) {
+            $NewArray[] = $objArrayItem;
+        }
 
-    return( $NewArray );
+        return ($NewArray);
+    }
 }
 
-function date_format_php_to_js( $sFormat ) {
-    switch( $sFormat ) {
-        //Predefined WP date formats
-        case 'F j, Y':
-            return( 'MM dd, yy' );
-            break;
-        case 'Y/m/d':
-            return( 'yy/mm/dd' );
-            break;
-        case 'm/d/Y':
-            return( 'mm/dd/yy' );
-            break;
-        case 'd/m/Y':
-            return( 'dd/mm/yy' );
-            break;
+if (!function_exists("ca_aliencyborg_date_format_php_to_js")) {
+    function ca_aliencyborg_date_format_php_to_js($sFormat)
+    {
+        switch ($sFormat) {
+            //Predefined WP date formats
+            case 'F j, Y':
+                return ('MM dd, yy');
+                break;
+            case 'Y/m/d':
+                return ('yy/mm/dd');
+                break;
+            case 'm/d/Y':
+                return ('mm/dd/yy');
+                break;
+            case 'd/m/Y':
+                return ('dd/mm/yy');
+                break;
+        }
     }
 }
 
@@ -33,14 +39,14 @@ if ( !isset( $jquery_ui_datetime_datepicker_i18n ) )
         "prevText" => _x( "Prev", "jQuery UI Datepicker Previous label", "content-protector" ), // Display text for previous month link
         "nextText" => _x( "Next", "jQuery UI Datepicker Next label", "content-protector" ), // Display text for next month link
         "currentText" => _x( "Today", "jQuery UI Datepicker Today label", "content-protector" ), // Display text for current month link
-        // we must replace the text indices for the following arrays with 0-based arrays
-        "monthNames" => strip_array_indices( $wp_locale->month ), // Names of months for drop-down and formatting
-        "monthNamesShort" => strip_array_indices( $wp_locale->month_abbrev ), // For formatting
-        "dayNames" => strip_array_indices( $wp_locale->weekday ), // For formatting
-        "dayNamesShort" => strip_array_indices( $wp_locale->weekday_abbrev ), // For formatting
-        "dayNamesMin" => strip_array_indices( $wp_locale->weekday_initial ), // Column headings for days starting at Sunday
         "weekHeader" => _x( "Wk", "jQuery UI Datepicker Week label", "content-protector" ), // Column header for week of the year
-        "dateFormat" => date_format_php_to_js( get_option( 'date_format' ) ),
+        // we must replace the text indices for the following arrays with 0-based arrays
+        "monthNames" => ca_aliencyborg_strip_array_indices( $wp_locale->month ), // Names of months for drop-down and formatting
+        "monthNamesShort" => ca_aliencyborg_strip_array_indices( $wp_locale->month_abbrev ), // For formatting
+        "dayNames" => ca_aliencyborg_strip_array_indices( $wp_locale->weekday ), // For formatting
+        "dayNamesShort" => ca_aliencyborg_strip_array_indices( $wp_locale->weekday_abbrev ), // For formatting
+        "dayNamesMin" => ca_aliencyborg_strip_array_indices( $wp_locale->weekday_initial ), // Column headings for days starting at Sunday
+        "dateFormat" => ca_aliencyborg_date_format_php_to_js( get_option( 'date_format' ) ),
         "firstDay" => get_option( 'start_of_week' ),
         "isRTL" => $wp_locale->is_rtl(),
         "showMonthAfterYear" => false, // True if the year select precedes month, false for month then year
@@ -58,7 +64,7 @@ if ( false !== strpos( $tf, "A") ) {
     $show_period_labels = true;
     $show_leading_zero = false;
 } else {
-    $meridiem = array('a', 'p');
+    $meridiem = array('', '');
     $show_period = false;
     $show_period_labels = false;
     $show_leading_zero = true;
@@ -68,13 +74,13 @@ if ( !isset( $jquery_ui_datetime_timepicker_i18n ) )
     $jquery_ui_datetime_timepicker_i18n = array(
         "hourText" => _x( "Hour", "jQuery UI Timepicker 'Hour' label", "content-protector" ),
         "minuteText" => _x( "Minute", "jQuery UI Timepicker 'Minute' label", "content-protector" ),
-        "amPmText" => $meridiem,
-        "showPeriod" => $show_period,
-        "showPeriodLabels" => $show_period_labels,
-        "showLeadingZero" => $show_leading_zero,
         "timeSeparator" => _x( ":", "jQuery UI Datepicker: Character used to separate hours and minutes in translated language", 'content-protector' ),
         "closeButtonText" => _x( "Done", "jQuery UI Timepicker 'Done' label", "content-protector" ),
         "nowButtonText" => _x( "Now", "jQuery UI Timepicker 'Now' label", "content-protector" ),
-        "deselectButtonText" => _x( "Deselect", "jQuery UI Timepicker 'Deselect' label", "content-protector" ) );
+        "deselectButtonText" => _x( "Deselect", "jQuery UI Timepicker 'Deselect' label", "content-protector" ),
+        "amPmText" => $meridiem,
+        "showPeriod" => $show_period,
+        "showPeriodLabels" => $show_period_labels,
+        "showLeadingZero" => $show_leading_zero );
 
 ?>

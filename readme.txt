@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=5F58E
 Tags: protect, lock, CAPTCHA, password, hide, content, secret, AJAX, cookie, post, page, secure, Contact Form 7
 Requires at least: 2.0.2
 Tested up to: 4.2.3
-Stable tag: 2.4
+Stable tag: 2.3
 License: GPL2
 
 Plugin to protect content on a Page or Post, where users require a password to access that content.

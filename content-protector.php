@@ -5,12 +5,12 @@ Text Domain: content-protector
 Plugin URI: http://wordpress.org/plugins/content-protector/
 Description: Plugin to password-protect portions of a Page or Post.
 Author: K. Tough
-Version: 2.4
+Version: 2.5
 Author URI: http://wordpress.org/plugins/content-protector/
 */
 if ( !class_exists( "contentProtectorPlugin" ) ) {
 
-    define( "CONTENT_PROTECTOR_VERSION", "2.4" );
+    define( "CONTENT_PROTECTOR_VERSION", "2.5" );
     define( "CONTENT_PROTECTOR_SLUG", "content-protector" );
     define( "CONTENT_PROTECTOR_HANDLE", "content_protector" );
     define( "CONTENT_PROTECTOR_COOKIE_ID", CONTENT_PROTECTOR_HANDLE . "_" );
@@ -44,7 +44,8 @@ if ( !class_exists( "contentProtectorPlugin" ) ) {
     define( "CONTENT_PROTECTOR_DEFAULT_PASSWORD_FIELD_PLACEHOLDER", _x( "Enter Password", "password field placeholder", "content-protector" ) );
     define( "CONTENT_PROTECTOR_DEFAULT_CAPTCHA_FIELD_PLACEHOLDER", _x( "Enter CAPTCHA", "CAPTCHA field placeholder", "content-protector" ) );
     // Required for styling JQuery UI plugins
-    define( "CONTENT_PROTECTOR_JQUERY_UI_CSS", CONTENT_PROTECTOR_PLUGIN_URL . "/css/jqueryui/1.10.3/themes/smoothness/jquery-ui.css" );
+    define( "CONTENT_PROTECTOR_JQUERY_UI_CSS", CONTENT_PROTECTOR_PLUGIN_URL . "/css/jqueryui/1.11.4/themes/smoothness/jquery-ui.css" );
+    define( "CONTENT_PROTECTOR_JQUERY_UI_THEME_CSS", CONTENT_PROTECTOR_PLUGIN_URL . "/css/jqueryui/1.11.4/themes/smoothness/theme.css" );
     define( "CONTENT_PROTECTOR_JQUERY_UI_TIMEPICKER_JS", CONTENT_PROTECTOR_PLUGIN_URL . "/js/jquery-ui-timepicker-0.3.3/jquery.ui.timepicker.js" );
     define( "CONTENT_PROTECTOR_JQUERY_UI_TIMEPICKER_CSS", CONTENT_PROTECTOR_PLUGIN_URL . "/js/jquery-ui-timepicker-0.3.3/jquery.ui.timepicker.css" );
     define( "CONTENT_PROTECTOR_CSS_DASHICONS", CONTENT_PROTECTOR_PLUGIN_URL . "/css/ca-aliencyborg-dashicons/style.css" );
@@ -59,7 +60,8 @@ if ( !class_exists( "contentProtectorPlugin" ) ) {
     class contentProtectorPlugin
     {
         private $forms_ajax;
-        private static $default_options = array( 'form_instructions' => CONTENT_PROTECTOR_DEFAULT_FORM_INSTRUCTIONS,
+        // If you modify $default_options, don't forget to modify the same array in uninstall.php.
+        private $default_options = array( 'form_instructions' => CONTENT_PROTECTOR_DEFAULT_FORM_INSTRUCTIONS,
             'form_instructions_font_size' => CONTENT_PROTECTOR_DEFAULT_FONT_SIZE_OPTION,
             'form_instructions_font_weight' => CONTENT_PROTECTOR_DEFAULT_FONT_WEIGHT,
             'form_instructions_color' => "",
@@ -101,6 +103,7 @@ if ( !class_exists( "contentProtectorPlugin" ) ) {
             'share_auth' => array(),
             'share_auth_duration' => CONTENT_PROTECTOR_DEFAULT_SHARE_AUTH_DURATION,
             'store_encrypted_passwords' => "1",
+            'delete_options_on_uninstall' => "",
             'password_field_type' => CONTENT_PROTECTOR_DEFAULT_PASSWORD_FIELD_TYPE,
             'captcha_field_type' => CONTENT_PROTECTOR_DEFAULT_CAPTCHA_FIELD_TYPE,
             'password_field_placeholder' => CONTENT_PROTECTOR_DEFAULT_PASSWORD_FIELD_PLACEHOLDER,
@@ -112,7 +115,7 @@ if ( !class_exists( "contentProtectorPlugin" ) ) {
         {
             //constructor
             $this->forms_ajax = array();
-            // Default options values
+
         }
 
         // Credit: http://bavotasan.com/2011/convert-hex-color-to-rgb-using-php/
@@ -143,8 +146,8 @@ if ( !class_exists( "contentProtectorPlugin" ) ) {
         {
             $width = get_option( CONTENT_PROTECTOR_HANDLE . '_captcha_width', CONTENT_PROTECTOR_DEFAULT_CAPTCHA_WIDTH );
             $height = get_option( CONTENT_PROTECTOR_HANDLE . '_captcha_height', CONTENT_PROTECTOR_DEFAULT_CAPTCHA_HEIGHT );
-            $text_height = get_option( CONTENT_PROTECTOR_HANDLE . "_captcha_text_height", CONTENT_PROTECTOR_DEFAULT_CAPTCHA_TEXT_HEIGHT_PCT );
-            $angle_variance = get_option( CONTENT_PROTECTOR_HANDLE . "_captcha_text_angle_variance", "0" );
+            $text_height = get_option( CONTENT_PROTECTOR_HANDLE . '"captcha_text_height', CONTENT_PROTECTOR_DEFAULT_CAPTCHA_TEXT_HEIGHT_PCT );
+            $angle_variance = get_option( CONTENT_PROTECTOR_HANDLE . 'captcha_text_angle_variance', "0" );
 
             $b_color = $this->__hex2rgb( get_option( CONTENT_PROTECTOR_HANDLE . '_captcha_background_color', CONTENT_PROTECTOR_DEFAULT_CAPTCHA_BACKGROUND_COLOR ) );
             $t_color = $this->__hex2rgb( get_option( CONTENT_PROTECTOR_HANDLE . '_captcha_text_color', CONTENT_PROTECTOR_DEFAULT_CAPTCHA_TEXT_COLOR ) );
@@ -269,7 +272,7 @@ if ( !class_exists( "contentProtectorPlugin" ) ) {
          */
         function __hashPassword( $pw = "" )
         {
-            $encryption_algorithm = get_option( CONTENT_PROTECTOR_HANDLE . "_encryption_algorithm", CONTENT_PROTECTOR_DEFAULT_ENCRYPTION_ALGORITHM );
+            $encryption_algorithm = get_option( CONTENT_PROTECTOR_HANDLE . 'encryption_algorithm', CONTENT_PROTECTOR_DEFAULT_ENCRYPTION_ALGORITHM );
             $salt = "";
 
             $store_encrypted_passwords = ( ( "1" == get_option( CONTENT_PROTECTOR_HANDLE . '_store_encrypted_passwords', "1" ) ) ? true : false );
@@ -719,6 +722,7 @@ if ( !class_exists( "contentProtectorPlugin" ) ) {
         function addAdminHeaderCode()
         {
             wp_enqueue_style( CONTENT_PROTECTOR_SLUG . '-jquery-ui-css', CONTENT_PROTECTOR_JQUERY_UI_CSS, false, CONTENT_PROTECTOR_VERSION );
+            wp_enqueue_style( CONTENT_PROTECTOR_SLUG . '-jquery-ui-theme-css', CONTENT_PROTECTOR_JQUERY_UI_THEME_CSS, false, CONTENT_PROTECTOR_VERSION );
             wp_enqueue_style( 'wp-color-picker' );
 
             $css_all_default = "/* " . __( "These styles will be applied to all Content Protector access forms.", "content-protector" ) . " */\n" .
@@ -764,7 +768,7 @@ if ( !class_exists( "contentProtectorPlugin" ) ) {
                 "#" . CONTENT_PROTECTOR_HANDLE . "_error_message_color"
             );
 
-            wp_enqueue_script( CONTENT_PROTECTOR_SLUG . '-admin_js', CONTENT_PROTECTOR_PLUGIN_URL . '/js/content-protector-admin.js', array( 'jquery', 'jquery-ui-tabs', 'wp-color-picker' ), CONTENT_PROTECTOR_VERSION );
+            wp_enqueue_script( CONTENT_PROTECTOR_SLUG . '-admin_js', CONTENT_PROTECTOR_PLUGIN_URL . '/js/content-protector-admin.js', array( 'jquery', 'jquery-ui-tabs', 'jquery-ui-accordion', 'wp-color-picker' ), CONTENT_PROTECTOR_VERSION );
             wp_localize_script( CONTENT_PROTECTOR_SLUG . '-admin_js',
                 'contentProtectorAdminOptions',
                 array( 'theme_colors' => "['" . join( "','", $this->__getThemeColors() ) . "']",
@@ -809,11 +813,13 @@ if ( !class_exists( "contentProtectorPlugin" ) ) {
             add_settings_field( CONTENT_PROTECTOR_HANDLE . '_share_auth', __( 'Shared Authorization', "content-protector" ), array( &$this, '__shareAuthFieldCallback' ), CONTENT_PROTECTOR_HANDLE . '_general_settings_subpage', CONTENT_PROTECTOR_HANDLE . '_general_settings_section' );
             add_settings_field( CONTENT_PROTECTOR_HANDLE . '_share_auth_duration', __( 'Shared Authorization Cookie Duration', "content-protector" ), array( &$this, '__shareAuthDurationFieldCallback' ), CONTENT_PROTECTOR_HANDLE . '_general_settings_subpage', CONTENT_PROTECTOR_HANDLE . '_general_settings_section' );
             add_settings_field( CONTENT_PROTECTOR_HANDLE . '_store_encrypted_passwords', __( 'Store Encrypted Passwords ', "content-protector" ), array( &$this, '__storeEncryptedPasswordsFieldCallback' ), CONTENT_PROTECTOR_HANDLE . '_general_settings_subpage', CONTENT_PROTECTOR_HANDLE . '_general_settings_section' );
+            add_settings_field( CONTENT_PROTECTOR_HANDLE . '_delete_options_on_uninstall', __( 'Delete Plugin Options On Uninstall ', "content-protector" ), array( &$this, '__deleteOptionsOnUninstallFieldCallback' ), CONTENT_PROTECTOR_HANDLE . '_general_settings_subpage', CONTENT_PROTECTOR_HANDLE . '_general_settings_section' );
             // Register our setting so that $_POST handling is done for us and our callback function just has to echo the HTML
             register_setting( CONTENT_PROTECTOR_HANDLE . '_general_settings_group', CONTENT_PROTECTOR_HANDLE . '_encryption_algorithm', 'esc_attr' );
             register_setting( CONTENT_PROTECTOR_HANDLE . '_general_settings_group', CONTENT_PROTECTOR_HANDLE . '_share_auth', '' );
             register_setting( CONTENT_PROTECTOR_HANDLE . '_general_settings_group', CONTENT_PROTECTOR_HANDLE . '_share_auth_duration', 'intval' );
             register_setting( CONTENT_PROTECTOR_HANDLE . '_general_settings_group', CONTENT_PROTECTOR_HANDLE . '_store_encrypted_passwords', '' );
+            register_setting( CONTENT_PROTECTOR_HANDLE . '_general_settings_group', CONTENT_PROTECTOR_HANDLE . '_delete_options_on_uninstall', '' );
 
             add_settings_section( CONTENT_PROTECTOR_HANDLE . '_form_instructions_settings_section', __( 'Form Instructions', "content-protector" ), array( &$this, '__formInstructionsSettingsSectionFieldCallback' ), CONTENT_PROTECTOR_HANDLE . '_form_instructions_settings_subpage' );
             // Add the fields for the Form Instructions Settings section
@@ -875,7 +881,7 @@ if ( !class_exists( "contentProtectorPlugin" ) ) {
             register_setting( CONTENT_PROTECTOR_HANDLE . '_form_submit_label_settings_group', CONTENT_PROTECTOR_HANDLE . '_form_submit_label_color', 'esc_attr' );
             register_setting( CONTENT_PROTECTOR_HANDLE . '_form_submit_label_settings_group', CONTENT_PROTECTOR_HANDLE . '_form_submit_button_color', 'esc_attr' );
 
-            add_settings_section( CONTENT_PROTECTOR_HANDLE . '_captcha_settings_section', __( 'CAPTCHA', "content-protector" ), array( &$this, '__captchaSettingsSectionFieldCallback' ), CONTENT_PROTECTOR_HANDLE . '_captcha_settings_subpage' );
+            add_settings_section( CONTENT_PROTECTOR_HANDLE . '_captcha_settings_section', __( 'CAPTCHA Image', "content-protector" ), array( &$this, '__captchaSettingsSectionFieldCallback' ), CONTENT_PROTECTOR_HANDLE . '_captcha_settings_subpage' );
             // Add the fields for the Form Submit Button Settings section
             add_settings_field( CONTENT_PROTECTOR_HANDLE . '_captcha_instructions', __( 'CAPTCHA Instructions Text', "content-protector" ), array( &$this, '__captchaInstructionsFieldCallback' ), CONTENT_PROTECTOR_HANDLE . '_captcha_settings_subpage', CONTENT_PROTECTOR_HANDLE . '_captcha_settings_section' );
             add_settings_field( CONTENT_PROTECTOR_HANDLE . '_captcha_instructions_display', __( 'CAPTCHA Instructions Display Mode', "content-protector" ), array( &$this, '__captchaInstructionsDisplayFieldCallback' ), CONTENT_PROTECTOR_HANDLE . '_captcha_settings_subpage', CONTENT_PROTECTOR_HANDLE . '_captcha_settings_section' );
@@ -1459,6 +1465,13 @@ if ( !class_exists( "contentProtectorPlugin" ) ) {
             }
         }
 
+        function __deleteOptionsOnUninstallFieldCallback()
+        {
+            $current_value = get_option( CONTENT_PROTECTOR_HANDLE . '_delete_options_on_uninstall', "" );
+            echo '<input type="checkbox" name="' . CONTENT_PROTECTOR_HANDLE . '_delete_options_on_uninstall" id="' . CONTENT_PROTECTOR_HANDLE . '_delete_options_on_uninstall" value="1" ' . checked( 1, get_option( CONTENT_PROTECTOR_HANDLE . '_delete_options_on_uninstall' ), false ) . ' />';
+            echo "&nbsp;<label for='" . CONTENT_PROTECTOR_HANDLE . "_delete_options_on_uninstall'>" . __( "If checked, all plugin options will be deleted if the plugin is unstalled.", "content-protector" ) . "</label><br />";
+        }
+
         function __passwordSettingsSectionFieldCallback()
         {
             echo __( "Control how the password/CAPTCHA entry field works in your access forms.", "content-protector" );
@@ -1523,7 +1536,8 @@ if ( !class_exists( "contentProtectorPlugin" ) ) {
         function drawSettingsPage()
         {
             ob_start();
-            include( "screens/admin_screen.php" );
+            //include( "screens/admin_screen_accordion.php" );
+            include( "screens/admin_screen_tabs.php" );
             $content = ob_get_contents();
             ob_end_clean();
 
@@ -1654,16 +1668,8 @@ if ( !class_exists( "contentProtectorPlugin" ) ) {
         function activatePlugin()
         {
             $prefix = CONTENT_PROTECTOR_HANDLE . '_';
-            foreach ( contentProtectorPlugin::default_options as $option => $value ) {
+            foreach ( $this->default_options as $option => $value ) {
                 add_option( $prefix . $option, $value );
-            }
-        }
-
-        static function uninstallPlugin()
-        {
-            $prefix = CONTENT_PROTECTOR_HANDLE . '_';
-            foreach ( contentProtectorPlugin::default_options as $option => $value ) {
-                delete_option( $prefix . $option, $value );
             }
         }
 
@@ -1706,7 +1712,6 @@ if ( class_exists( "contentProtectorPlugin" ) ) {
 // Actions and Filters
 if ( isset( $contentProtectorPluginInstance ) ) {
     register_activation_hook( __FILE__, array( &$contentProtectorPluginInstance, "activatePlugin" ) );
-    register_uninstall_hook( __FILE__, "contentProtectorPlugin::uninstallPlugin" );
 
     add_filter( 'content_protector_content', 'wptexturize' );
     add_filter( 'content_protector_content', 'convert_smilies' );

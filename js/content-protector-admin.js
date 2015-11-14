@@ -1,6 +1,6 @@
 jQuery(document).ready(function() {
-//        jQuery('#content-protector-accordion').accordion({ heightStyle: "content" });
-//    jQuery('#content-protector-tabs').tabs();
+//  jQuery('#content-protector-accordion').accordion({ heightStyle: "content" });
+//  jQuery('#content-protector-tabs').tabs();
     jQuery( "#content-protector-tabs" ).tabs().addClass( "ui-tabs-vertical ui-helper-clearfix" );
     jQuery( "#content-protector-tabs li" ).removeClass( "ui-corner-top" ).addClass( "ui-corner-left" );
     jQuery('#form-instructions-reset').click( function() {

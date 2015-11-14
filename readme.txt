@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=5F58E
 Tags: protect, lock, CAPTCHA, password, hide, content, secret, AJAX, cookie, post, page, secure, Contact Form 7
 Requires at least: 2.0.2
 Tested up to: 4.3.1
-Stable tag: 2.5
+Stable tag: 2.3
 License: GPL2
 
 Plugin to protect content on a Page or Post, where users require a password to access that content.
@@ -59,6 +59,7 @@ Coming soon.  In the meantime, check out the <a href="http://wordpress.org/suppo
 * Improved option initialization and cleanup routines.
 * `content-protector-ajax.js` now loads in the footer.
 * WPML/Polylang compatibility (beta).
+* jQuery UI theme updated to 1.11.4
 
 = 2.4 =
 * Skipped
@@ -119,7 +120,7 @@ should help in choosing colors that fit in with the active Theme.
 * AJAX loading message now customizable.
 
 = 1.0.1 =
-* Added required images for JQuery UI theme.
+* Added required images for jQuery UI theme.
 * Fixed some i18n strings.
 
 = 1.0 =

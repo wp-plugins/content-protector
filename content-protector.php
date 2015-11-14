@@ -5,12 +5,12 @@ Text Domain: content-protector
 Plugin URI: http://wordpress.org/plugins/content-protector/
 Description: Plugin to password-protect portions of a Page or Post.
 Author: K. Tough
-Version: 2.5
+Version: 2.3
 Author URI: http://wordpress.org/plugins/content-protector/
 */
 if ( !class_exists( "contentProtectorPlugin" ) ) {
 
-    define( "CONTENT_PROTECTOR_VERSION", "2.5" );
+    define( "CONTENT_PROTECTOR_VERSION", "2.3" );
     define( "CONTENT_PROTECTOR_SLUG", "content-protector" );
     define( "CONTENT_PROTECTOR_HANDLE", "content_protector" );
     define( "CONTENT_PROTECTOR_COOKIE_ID", CONTENT_PROTECTOR_HANDLE . "_" );
@@ -1440,7 +1440,7 @@ if ( !class_exists( "contentProtectorPlugin" ) ) {
             if ( $current_value == "1" ) {
                 $password_hashes = get_transient( 'content_protector_password_hashes' );
                 if ( is_array( $password_hashes ) ) {
-                    $text = sprintf( _n( '%s password is stored in the database.', '%s passwords are stored in the database.', count( $password_hashes ), "content-protector" ), count( $password_hashes ) );
+                    $text = sprintf( _n( '%d password is stored in the database.', '%d passwords are stored in the database.', count( $password_hashes ), "content-protector" ), count( $password_hashes ) );
                     echo "<p><em>" . $text . "</em></p>";
                 }
             }
@@ -1476,7 +1476,7 @@ if ( !class_exists( "contentProtectorPlugin" ) ) {
         {
             echo __( "Control how the password/CAPTCHA entry field works in your access forms.", "content-protector" );
             /* translators: %s refers to the 'input.content-protector-password' CSS class. */
-            echo "<br /><em>" . sprintf( __( "You can manually style this all access forms using the %s CSS class.", "content-protector" ), "</em><code>input.content-protector-password</code><em>" ) . "</em>";
+            echo "<br /><em>" . sprintf( __( "You can manually style this on all access forms using the %s CSS class.", "content-protector" ), "</em><code>input.content-protector-password</code><em>" ) . "</em>";
 
         }
 

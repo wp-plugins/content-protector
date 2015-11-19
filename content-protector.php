@@ -5,12 +5,12 @@ Text Domain: content-protector
 Plugin URI: http://wordpress.org/plugins/content-protector/
 Description: Plugin to password-protect portions of a Page or Post.
 Author: K. Tough
-Version: 2.5.0.1
+Version: 2.6
 Author URI: http://wordpress.org/plugins/content-protector/
 */
 if ( !class_exists( "contentProtectorPlugin" ) ) {
 
-    define( "CONTENT_PROTECTOR_VERSION", "2.5.0.1" );
+    define( "CONTENT_PROTECTOR_VERSION", "2.6" );
     define( "CONTENT_PROTECTOR_SLUG", "content-protector" );
     define( "CONTENT_PROTECTOR_HANDLE", "content_protector" );
     define( "CONTENT_PROTECTOR_COOKIE_ID", CONTENT_PROTECTOR_HANDLE . "_" );

@@ -10,7 +10,7 @@ if ( !defined( 'WP_UNINSTALL_PLUGIN' ) )
     exit();
 
 if ( !defined( 'CONTENT_PROTECTOR_HANDLE' ) )
-    define( "CONTENT_PROTECTOR_HANDLE", "content_protector" );;
+    define( "CONTENT_PROTECTOR_HANDLE", "content_protector" );
 
 // Make sure $default_options has the matching set of entries as in the contentProtectorPlugin definition (~line 63)
 $default_options = array( 'form_instructions',
@@ -65,7 +65,7 @@ $default_options = array( 'form_instructions',
 
 $prefix = CONTENT_PROTECTOR_HANDLE . '_';
 if ( "1" === get_option( $prefix . 'delete_options_on_uninstall' ) ) {
-    foreach ( $default_options as $option => $value ) {
+    foreach ( $default_options as $option ) {
         delete_option( $prefix . $option );
     }
 }

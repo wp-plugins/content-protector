@@ -5,12 +5,12 @@ Text Domain: content-protector
 Plugin URI: http://wordpress.org/plugins/content-protector/
 Description: Plugin to password-protect portions of a Page or Post.
 Author: K. Tough
-Version: 2.3
+Version: 2.5.0.1
 Author URI: http://wordpress.org/plugins/content-protector/
 */
 if ( !class_exists( "contentProtectorPlugin" ) ) {
 
-    define( "CONTENT_PROTECTOR_VERSION", "2.3" );
+    define( "CONTENT_PROTECTOR_VERSION", "2.5.0.1" );
     define( "CONTENT_PROTECTOR_SLUG", "content-protector" );
     define( "CONTENT_PROTECTOR_HANDLE", "content_protector" );
     define( "CONTENT_PROTECTOR_COOKIE_ID", CONTENT_PROTECTOR_HANDLE . "_" );
@@ -1536,6 +1536,8 @@ if ( !class_exists( "contentProtectorPlugin" ) ) {
         function drawSettingsPage()
         {
             ob_start();
+            // Optional: you can display the admin screen as an accordion. Uncomment the next line of PHP code,
+            // comment out the line following it, and follow the instructions in /js/content-protector-admin.js.
             //include( "screens/admin_screen_accordion.php" );
             include( "screens/admin_screen_tabs.php" );
             $content = ob_get_contents();

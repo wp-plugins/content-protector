@@ -1,10 +1,10 @@
 jQuery(document).ready(function() {
-    // Optional: you can display the admin screen as an accordion. Uncomment the next live line,
+    // Optional: you can display the admin screen as an accordion. Uncomment the next line of JavaScript code,
     // comment out the tabs block following it, and follow the instructions in content-protector.php near line 1539.
     //  jQuery('#content-protector-accordion').accordion({ heightStyle: "content" });
 
     /* start tabs */
-    var width_threshhold = 835;
+    var width_threshhold = 960;  // Width in pixels; threshhold to switch between vertical and horizontal tabs.
     jQuery('#content-protector-tabs').tabs();
     jQuery( window).resize( function() {
         if ( jQuery( window).width() >= width_threshhold ) {

@@ -3,8 +3,8 @@ Contributors: kjvtough
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=5F58ELJ9R3PVL&lc=CA&item_name=Content%20Protector%20Wordpress%20Plugin%20Donation&currency_code=USD&bn=PP%2dDonationsBF%3abtn_donateCC_LG%2egif%3aNonHosted
 Tags: protect, lock, CAPTCHA, password, hide, content, secret, AJAX, cookie, post, page, secure, Contact Form 7
 Requires at least: 2.0.2
-Tested up to: 4.3.1
-Stable tag: 2.3
+Tested up to: 4.4
+Stable tag: 2.5.0.1
 License: GPL2
 
 Plugin to protect content on a Page or Post, where users require a password to access that content.
@@ -53,13 +53,17 @@ Coming soon.  In the meantime, check out the <a href="http://wordpress.org/suppo
 9. A Content Protector access form that uses a CAPTCHA.  You can customize the image under Settings -> Content Protector.
 
 == Changelog ==
-= 2.5 =
+= 2.5.0.1 =
 * New setting to manage encrypted passwords transient storage.
 * New settings for Password/CAPTCHA Fields character lengths.
 * Improved option initialization and cleanup routines.
 * `content-protector-ajax.js` now loads in the footer.
 * WPML/Polylang compatibility (beta).
 * jQuery UI theme updated to 1.11.4
+* New partial translation into Serbian (Latin); thanks to Andrijana Nikolic from WebHostingGeeks (Novi parcijalni prevod na Srpski ( latinski ); Hvala Andrijana Nikolic iz WebHostingGeeks)
+
+= 2.5 =
+* Skipped
 
 = 2.4 =
 * Skipped

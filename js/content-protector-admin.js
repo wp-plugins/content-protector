@@ -1,8 +1,23 @@
 jQuery(document).ready(function() {
-//  jQuery('#content-protector-accordion').accordion({ heightStyle: "content" });
-//  jQuery('#content-protector-tabs').tabs();
-    jQuery( "#content-protector-tabs" ).tabs().addClass( "ui-tabs-vertical ui-helper-clearfix" );
-    jQuery( "#content-protector-tabs li" ).removeClass( "ui-corner-top" ).addClass( "ui-corner-left" );
+    // Optional: you can display the admin screen as an accordion. Uncomment the next live line,
+    // comment out the tabs block following it, and follow the instructions in content-protector.php near line 1539.
+    //  jQuery('#content-protector-accordion').accordion({ heightStyle: "content" });
+
+    /* start tabs */
+    var width_threshhold = 835;
+    jQuery('#content-protector-tabs').tabs();
+    jQuery( window).resize( function() {
+        if ( jQuery( window).width() >= width_threshhold ) {
+            jQuery("#content-protector-tabs").addClass("ui-tabs-vertical ui-helper-clearfix");
+            jQuery("#content-protector-tabs li").removeClass("ui-corner-top").addClass("ui-corner-left");
+        }
+        if ( jQuery( window).width() < width_threshhold ) {
+            jQuery("#content-protector-tabs li").removeClass("ui-corner-left").addClass("ui-corner-top");
+            jQuery("#content-protector-tabs").removeClass("ui-tabs-vertical ui-helper-clearfix");
+        }
+    }).trigger( "resize" );
+    /* end tabs */
+
     jQuery('#form-instructions-reset').click( function() {
         jQuery(contentProtectorAdminOptions.form_instructions_id).val(contentProtectorAdminOptions.form_instructions_default);
     });
